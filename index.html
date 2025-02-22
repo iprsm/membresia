@@ -14,9 +14,21 @@
             color: #f1f1f1; /* Texto claro */
         }
 
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            width: 50px; /* Ajuste o tamanho do logo conforme necessário */
+            margin-right: 10px; /* Espaçamento entre o logo e o título */
+        }
+
         h2 {
-            text-align: center;
             color: #f1f1f1; /* Cor azul para o título */
+            margin: 0;
         }
 
         form {
@@ -80,7 +92,12 @@
     </style>
 </head>
 <body>
-    <h2>IPRSM - Formulario Membresia</h2>
+    <!-- Cabeçalho com logo e título -->
+    <div class="header">
+        <img src="https://img.linkme.bio/img/2022/09/07094632/aaa-3-300x300.png" alt="Logo IPRSM" class="logo">
+        <h2>IPRSM - Formulario Membresia</h2>
+    </div>
+
     <form id="idForm">
         <label for="name">Nome:</label>
         <input type="text" id="name" required>
