@@ -16,7 +16,7 @@
 
         h2 {
             text-align: center;
-            color: #3498db; /* Cor azul para o título */
+            color: #f1f1f1; /* Cor azul para o título */
         }
 
         form {
@@ -100,9 +100,9 @@
         <label for="baptismDate">Data de Batismo:</label>
         <input type="date" id="baptismDate" required>
 
-        <label for="position">Cargo:</label>
+        <label for="position">Função:</label>
         <select id="position" required>
-            <option value="">Selecione o cargo</option>
+            <option value="">Selecione o Função</option>
             <option value="Pastor(a)">Pastor(a)</option>
             <option value="Presbítero(a)">Presbítero(a)</option>
             <option value="Diácono(a)">Diácono(a)</option>
@@ -173,7 +173,7 @@
             doc.text(`Telefone: ${phone}`, 20, 70);
             doc.text(`Endereço: ${address}`, 20, 80);
             doc.text(`Data de Batismo: ${baptismDate}`, 20, 90);
-            doc.text(`Cargo: ${position}`, 20, 100);
+            doc.text(`Função: ${position}`, 20, 100);
 
             if (capturedImageData) {
                 doc.addImage(capturedImageData, "PNG", 20, 110, 60, 60);
