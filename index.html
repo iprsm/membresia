@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerar Documento com Foto</title>
+    <title>IPRSM - Formulario Membresia</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         body {
@@ -76,7 +76,7 @@
     </style>
 </head>
 <body>
-    <h2>Preencha os dados e capture a foto</h2>
+    <h2>IPRSM - Formulario Membresia</h2>
     <form id="idForm">
         <label for="name">Nome:</label>
         <input type="text" id="name" required>
@@ -183,7 +183,7 @@
 
         function sendViaWhatsApp() {
             const phoneNumber = "5511979654420";
-            const message = "Olá, segue o documento de identificação. Anexe o PDF antes de enviar!";
+            const message = "Olá, segue a Carteirinha de Identificação!";
             const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
             window.open(whatsappURL, "_blank");
         }
