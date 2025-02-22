@@ -7,70 +7,74 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            padding: 10px; /* Adiciona um pouco de espaço nas bordas */
-            margin: 0; /* Remove margem padrão */
-            background-color: #333; /* Cor de fundo escura */
-            color: white; /* Texto branco */
+            font-family: 'Roboto', sans-serif;
+            padding: 20px;
+            margin: 0;
+            background-color: #121212; /* Fundo escuro */
+            color: #f1f1f1; /* Texto claro */
+        }
+
+        h2 {
+            text-align: center;
+            color: #3498db; /* Cor azul para o título */
         }
 
         form {
             display: flex;
             flex-direction: column;
-            align-items: stretch; /* Alinhamento esticado para preencher a largura */
-            max-width: 600px; /* Largura máxima do formulário */
-            margin: auto; /* Centraliza o formulário */
-            background: #444; /* Fundo do formulário */
-            padding: 20px; /* Espaçamento interno */
-            border-radius: 5px; /* Cantos arredondados */
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* Sombra suave */
+            align-items: stretch;
+            max-width: 700px;
+            margin: auto;
+            background: #1e1e1e; /* Fundo mais suave para o formulário */
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
         }
 
-        label, input, select, button {
-            margin: 5px 0; /* Espaçamento entre os elementos */
-            width: 100%; /* Garante que os elementos ocupem toda a largura disponível */
-            box-sizing: border-box; /* Inclui padding e border na largura total */
+        label {
+            margin-bottom: 8px;
+            color: #bdc3c7; /* Cor mais suave para os labels */
         }
 
         input, select {
-            padding: 10px; /* Espaçamento interno nos inputs e select */
-            border: 1px solid #555; /* Borda cinza */
-            border-radius: 5px; /* Cantos arredondados */
-            background: #666; /* Fundo do input */
-            color: white; /* Texto branco nos inputs */
+            padding: 12px;
+            border: 2px solid #555;
+            border-radius: 8px;
+            background: #333;
+            font-size: 14px;
+            color: #f1f1f1; /* Texto claro nos campos */
         }
 
         input:focus, select:focus {
-            border-color: #007BFF; /* Borda azul ao focar no input/select */
-            outline: none; /* Remove a borda padrão de foco */
+            border-color: #3498db; /* Cor azul ao focar no input/select */
+            outline: none;
         }
 
         button {
-            cursor: pointer; /* Muda o cursor para indicar um botão clicável */
-            background-color: #007BFF; /* Cor de fundo azul */
-            color: white; /* Texto branco */
-            border: none; /* Remove borda padrão */
-            border-radius: 5px; /* Cantos arredondados */
-            padding: 10px; /* Espaçamento interno do botão */
-            transition: background-color 0.3s; /* Transição suave para a cor de fundo */
+            cursor: pointer;
+            background-color: #3498db; /* Cor de fundo azul para os botões */
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
         }
 
         button:hover {
-            background-color: #0056b3; /* Cor do botão ao passar o mouse */
+            background-color: #2980b9; /* Cor mais escura ao passar o mouse */
+        }
+
+        #capturedImage {
+            max-width: 100%;
+            margin-top: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
         }
 
         @media (max-width: 600px) {
             form {
-                width: 90%; /* Reduz a largura do formulário em telas pequenas */
-            }
-
-            video {
-                width: 100%; /* Garante que o vídeo ocupe toda a largura disponível */
-                height: auto; /* Mantém a proporção */
-            }
-
-            img {
-                max-width: 100%; /* Garante que a imagem ocupe a largura máxima do contêiner */
+                width: 90%;
             }
         }
     </style>
@@ -108,7 +112,7 @@
 
         <label>Foto:</label>
         <input type="file" accept="image/*" id="fileInput" onchange="loadImageFromFile(event)" capture="camera" required>
-        <img id="capturedImage" style="display:none; max-width: 100%;"><br>
+        <img id="capturedImage" style="display:none;"><br>
 
         <button type="button" onclick="validateAndGeneratePDF()">Gerar e Visualizar</button>
         <button type="button" id="sendWhatsAppBtn" style="display:none;" onclick="sendViaWhatsApp()">Enviar pelo WhatsApp</button>
@@ -126,7 +130,7 @@
                     capturedImageData = e.target.result;
                     const img = document.getElementById("capturedImage");
                     img.src = capturedImageData;
-                    img.style.display = "block"; // Exibe a imagem carregada
+                    img.style.display = "block";
                 };
                 reader.readAsDataURL(file);
             }
@@ -134,34 +138,35 @@
 
         function validateAndGeneratePDF() {
             const form = document.getElementById('idForm');
-            if (form.checkValidity()) { // Verifica se todos os campos obrigatórios estão preenchidos
+            if (form.checkValidity()) {
                 generateAndPreviewPDF();
             } else {
                 alert("Por favor, preencha todos os campos obrigatórios.");
             }
         }
 
-        // Função para formatar a data
         function formatDate(inputDate) {
             const date = new Date(inputDate);
             const day = String(date.getDate()).padStart(2, '0');
-            const month = String(date.getMonth() + 1).padStart(2, '0'); // Mês começa do zero
+            const month = String(date.getMonth() + 1).padStart(2, '0');
             const year = date.getFullYear();
-            return `${day}/${month}/${year}`; // Formato dia/mês/ano
+            return `${day}/${month}/${year}`;
         }
 
         function generateAndPreviewPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             const name = document.getElementById('name').value;
-            const dob = formatDate(document.getElementById('dob').value); // Formata a data de nascimento
+            const dob = formatDate(document.getElementById('dob').value);
             const cpf = document.getElementById('cpf').value;
             const phone = document.getElementById('phone').value;
             const address = document.getElementById('address').value;
-            const baptismDate = formatDate(document.getElementById('baptismDate').value); // Formata a data de batismo
+            const baptismDate = formatDate(document.getElementById('baptismDate').value);
             const position = document.getElementById('position').value;
 
+            doc.setFontSize(22);
             doc.text("Documento de Identificação", 20, 20);
+            doc.setFontSize(16);
             doc.text(`Nome: ${name}`, 20, 40);
             doc.text(`Data de Nascimento: ${dob}`, 20, 50);
             doc.text(`CPF: ${cpf}`, 20, 60);
@@ -190,4 +195,3 @@
     </script>
 </body>
 </html>
-
