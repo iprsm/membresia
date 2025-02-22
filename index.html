@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerar Documento com Foto</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 10px; /* Adiciona um pouco de espaço nas bordas */
+            margin: 0; /* Remove margem padrão */
+            background-color: #333; /* Cor de fundo escura */
+            color: white; /* Texto branco */
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch; /* Alinhamento esticado para preencher a largura */
+            max-width: 600px; /* Largura máxima do formulário */
+            margin: auto; /* Centraliza o formulário */
+            background: #444; /* Fundo do formulário */
+            padding: 20px; /* Espaçamento interno */
+            border-radius: 5px; /* Cantos arredondados */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* Sombra suave */
+        }
+
+        label, input, select, button {
+            margin: 5px 0; /* Espaçamento entre os elementos */
+            width: 100%; /* Garante que os elementos ocupem toda a largura disponível */
+            box-sizing: border-box; /* Inclui padding e border na largura total */
+        }
+
+        input, select {
+            padding: 10px; /* Espaçamento interno nos inputs e select */
+            border: 1px solid #555; /* Borda cinza */
+            border-radius: 5px; /* Cantos arredondados */
+            background: #666; /* Fundo do input */
+            color: white; /* Texto branco nos inputs */
+        }
+
+        input:focus, select:focus {
+            border-color: #007BFF; /* Borda azul ao focar no input/select */
+            outline: none; /* Remove a borda padrão de foco */
+        }
+
+        button {
+            cursor: pointer; /* Muda o cursor para indicar um botão clicável */
+            background-color: #007BFF; /* Cor de fundo azul */
+            color: white; /* Texto branco */
+            border: none; /* Remove borda padrão */
+            border-radius: 5px; /* Cantos arredondados */
+            padding: 10px; /* Espaçamento interno do botão */
+            transition: background-color 0.3s; /* Transição suave para a cor de fundo */
+        }
+
+        button:hover {
+            background-color: #0056b3; /* Cor do botão ao passar o mouse */
+        }
+
+        @media (max-width: 600px) {
+            form {
+                width: 90%; /* Reduz a largura do formulário em telas pequenas */
+            }
+
+            video {
+                width: 100%; /* Garante que o vídeo ocupe toda a largura disponível */
+                height: auto; /* Mantém a proporção */
+            }
+
+            img {
+                max-width: 100%; /* Garante que a imagem ocupe a largura máxima do contêiner */
+            }
+        }
+    </style>
+</head>
+<body>
+    <h2>Preencha os dados e capture a foto</h2>
+    <form id="idForm">
+        <label for="name">Nome:</label>
+        <input type="text" id="name" required>
+
+        <label for="dob">Data de Nascimento:</label>
+        <input type="date" id="dob" required>
+
+        <label for="cpf">CPF:</label>
+        <input type="text" id="cpf" required placeholder="XXX.XXX.XXX-XX">
+
+        <label for="phone">Telefone:</label>
+        <input type="tel" id="phone" required placeholder="(XX) XXXXX-XXXX">
+
+        <label for="address">Endereço:</label>
+        <input type="text" id="address" required>
+
+        <label for="baptismDate">Data de Batismo:</label>
+        <input type="date" id="baptismDate" required>
+
+        <label for="position">Cargo:</label>
+        <select id="position" required>
+            <option value="">Selecione o cargo</option>
+            <option value="Pastor(a)">Pastor(a)</option>
+            <option value="Presbítero(a)">Presbítero(a)</option>
+            <option value="Diácono(a)">Diácono(a)</option>
+            <option value="Missionário(a)">Missionário(a)</option>
+            <option value="Membro">Membro</option>
+        </select>
+
+        <label>Foto:</label>
+        <input type="file" accept="image/*" id="fileInput" onchange="loadImageFromFile(event)" capture="camera" required>
+        <img id="capturedImage" style="display:none; max-width: 100%;"><br>
+
+        <button type="button" onclick="validateAndGeneratePDF()">Gerar e Visualizar</button>
+        <button type="button" id="sendWhatsAppBtn" style="display:none;" onclick="sendViaWhatsApp()">Enviar pelo WhatsApp</button>
+    </form>
+
+    <script>
+        let generatedPDFBlob = null;
+        let capturedImageData = null;
+
+        function loadImageFromFile(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    capturedImageData = e.target.result;
+                    const img = document.getElementById("capturedImage");
+                    img.src = capturedImageData;
+                    img.style.display = "block"; // Exibe a imagem carregada
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function validateAndGeneratePDF() {
+            const form = document.getElementById('idForm');
+            if (form.checkValidity()) { // Verifica se todos os campos obrigatórios estão preenchidos
+                generateAndPreviewPDF();
+            } else {
+                alert("Por favor, preencha todos os campos obrigatórios.");
+            }
+        }
+
+        // Função para formatar a data
+        function formatDate(inputDate) {
+            const date = new Date(inputDate);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0'); // Mês começa do zero
+            const year = date.getFullYear();
+            return `${day}/${month}/${year}`; // Formato dia/mês/ano
+        }
+
+        function generateAndPreviewPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const name = document.getElementById('name').value;
+            const dob = formatDate(document.getElementById('dob').value); // Formata a data de nascimento
+            const cpf = document.getElementById('cpf').value;
+            const phone = document.getElementById('phone').value;
+            const address = document.getElementById('address').value;
+            const baptismDate = formatDate(document.getElementById('baptismDate').value); // Formata a data de batismo
+            const position = document.getElementById('position').value;
+
+            doc.text("Documento de Identificação", 20, 20);
+            doc.text(`Nome: ${name}`, 20, 40);
+            doc.text(`Data de Nascimento: ${dob}`, 20, 50);
+            doc.text(`CPF: ${cpf}`, 20, 60);
+            doc.text(`Telefone: ${phone}`, 20, 70);
+            doc.text(`Endereço: ${address}`, 20, 80);
+            doc.text(`Data de Batismo: ${baptismDate}`, 20, 90);
+            doc.text(`Cargo: ${position}`, 20, 100);
+
+            if (capturedImageData) {
+                doc.addImage(capturedImageData, "PNG", 20, 110, 60, 60);
+            }
+
+            generatedPDFBlob = doc.output("blob");
+            const pdfURL = URL.createObjectURL(generatedPDFBlob);
+            window.open(pdfURL, "_blank");
+
+            document.getElementById('sendWhatsAppBtn').style.display = 'inline';
+        }
+
+        function sendViaWhatsApp() {
+            const phoneNumber = "5511979654420";
+            const message = "Olá, segue o documento de identificação. Anexe o PDF antes de enviar!";
+            const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappURL, "_blank");
+        }
+    </script>
+</body>
+</html>
+
