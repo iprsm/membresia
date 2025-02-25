@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IPRSM - Cadastro de Membros</title>
+    <title>IPRSM - Formulário de Membresia</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         body {
@@ -27,7 +27,6 @@
         }
 
         h2 {
-            color: #f1f1f1;
             margin: 0;
         }
 
@@ -93,7 +92,7 @@
             height: 220px;
             background: #fff;
             padding: 15px;
-            border-radius: 10px;
+            border-radius: 15px;
             color: #000;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
             border: 5px solid #000;
@@ -126,7 +125,7 @@
         }
 
         .card img {
-            border-radius: 8px;
+            border-radius: 12px;
             width: 100px;
             height: 100px;
             object-fit: cover;
@@ -141,7 +140,7 @@
 <body>
     <div class="header">
         <img src="https://i.imgur.com/naHMr26.png" alt="Logo IPRSM" class="logo">
-        <h2>IPRSM - Cadastro de Membros</h2>
+        <h2>IPRSM - Formulário de Membresia</h2>
     </div>
 
     <form id="idForm">
@@ -208,9 +207,14 @@
             }
         }
 
+        function formatDate(dateStr) {
+            const [year, month, day] = dateStr.split("-");
+            return `${day}/${month}/${year}`;
+        }
+
         function generateCardAndSave() {
             document.getElementById('cardName').textContent = document.getElementById('name').value;
-            document.getElementById('cardBaptismDate').textContent = document.getElementById('baptismDate').value;
+            document.getElementById('cardBaptismDate').textContent = formatDate(document.getElementById('baptismDate').value);
             document.getElementById('cardPosition').textContent = document.getElementById('position').value;
             if (capturedImageData) {
                 document.getElementById('cardImage').src = capturedImageData;
