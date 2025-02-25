@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IPRSM - Cadastro de Membros</title>
+    <title>IPRSM - Formulario Membresia</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
     <style>
         body {
@@ -57,6 +57,11 @@
             color: #f1f1f1;
         }
 
+        input:focus, select:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+
         button {
             cursor: pointer;
             background-color: #3498db;
@@ -65,7 +70,25 @@
             border-radius: 8px;
             padding: 12px;
             font-size: 16px;
+            transition: background-color 0.3s ease;
             margin-top: 20px;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        #capturedImage {
+            max-width: 100%;
+            margin-top: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+        }
+
+        @media (max-width: 600px) {
+            form {
+                width: 90%;
+            }
         }
 
         .card {
@@ -78,30 +101,86 @@
             padding: 15px;
             border-radius: 10px;
             color: #000;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
             border: 5px solid #000;
             flex-direction: column;
         }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            width: 100%;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .card-header img {
+            width: 50px;
+            height: 50px;
+            margin-right: 10px;
+        }
+
+        .card-header h3 {
+            font-size: 18px;
+            margin: 0;
+            color: #000;
+        }
+
+        .card-content {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .card img {
+            border-radius: 8px;
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            margin-right: 15px;
+        }
+
+        .card-info {
+            flex-grow: 1;
+        }
+
+        .card-info p {
+            margin: 5px 0;
+            color: #000;
+        }
+
     </style>
 </head>
 <body>
     <div class="header">
         <img src="https://i.imgur.com/naHMr26.png" alt="Logo IPRSM" class="logo">
-        <h2>IPRSM - Cadastro de Membros</h2>
+        <h2>IPRSM - Formulario Membresia</h2>
     </div>
 
     <form id="idForm">
         <label for="name">Nome:</label>
         <input type="text" id="name" required><br>
 
+        <label for="dob">Data de Nascimento:</label>
+        <input type="date" id="dob" required><br>
+
+        <label for="cpf">CPF:</label>
+        <input type="text" id="cpf" required placeholder="XXX.XXX.XXX-XX"><br>
+
         <label for="phone">Telefone:</label>
         <input type="tel" id="phone" required placeholder="(XX) XXXXX-XXXX"><br>
+
+        <label for="address">Endereço:</label>
+        <input type="text" id="address" required><br>
 
         <label for="baptismDate">Data de Batismo:</label>
         <input type="date" id="baptismDate" required><br>
 
         <label for="position">Função:</label>
         <select id="position" required>
-            <option value="">Selecione a Função</option>
+            <option value="">Selecione o Função</option>
             <option value="Pastor(a)">Pastor(a)</option>
             <option value="Presbítero(a)">Presbítero(a)</option>
             <option value="Diácono(a)">Diácono(a)</option>
@@ -109,8 +188,16 @@
             <option value="Membro">Membro</option>
         </select><br>
 
+        <label>
+            <input type="checkbox" id="dizimista"> Dizimista
+        </label>
+
+        <label>
+            <input type="checkbox" id="ebenezer"> Ebenezer
+        </label><br>
+
         <label>Foto:</label>
-        <input type="file" accept="image/*" id="fileInput" onchange="loadImageFromFile(event)" required>
+        <input type="file" accept="image/*" id="fileInput" onchange="loadImageFromFile(event)" capture="camera" required>
         <img id="capturedImage" style="display:none;"><br>
 
         <button type="button" onclick="generateCard()">Visualizar Carteirinha</button>
@@ -128,6 +215,7 @@
                 <p><strong>Nome:</strong> <span id="cardName"></span></p>
                 <p><strong>Data de Batismo:</strong> <span id="cardBaptismDate"></span></p>
                 <p><strong>Função:</strong> <span id="cardPosition"></span></p>
+                <p><strong>Status:</strong> <span id="cardStatus"></span></p>
             </div>
         </div>
     </div>
@@ -141,35 +229,51 @@
                 const reader = new FileReader();
                 reader.onload = function (e) {
                     capturedImageData = e.target.result;
-                    document.getElementById("capturedImage").src = capturedImageData;
-                    document.getElementById("capturedImage").style.display = "block";
+                    const img = document.getElementById("capturedImage");
+                    img.src = capturedImageData;
+                    img.style.display = "block";
                 };
                 reader.readAsDataURL(file);
             }
         }
 
+        // Função para formatar a data no formato dd/mm/yyyy
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}/${month}/${year}`;
+        }
+
         function generateCard() {
-            document.getElementById('cardName').textContent = document.getElementById('name').value;
-            document.getElementById('cardBaptismDate').textContent = document.getElementById('baptismDate').value;
-            document.getElementById('cardPosition').textContent = document.getElementById('position').value;
+            const name = document.getElementById('name').value;
+            const phone = document.getElementById('phone').value;
+            const position = document.getElementById('position').value;
+            const baptismDate = formatDate(document.getElementById('baptismDate').value);
+            const dob = formatDate(document.getElementById('dob').value);
+            const dizimista = document.getElementById('dizimista').checked ? "Dizimista" : "";
+            const ebenezer = document.getElementById('ebenezer').checked ? "Ebenezer" : "";
+
+            document.getElementById('cardName').textContent = name;
+            document.getElementById('cardBaptismDate').textContent = baptismDate;
+            document.getElementById('cardPosition').textContent = position;
+            document.getElementById('cardStatus').textContent = `${dizimista} ${ebenezer}`.trim();
             if (capturedImageData) {
                 document.getElementById('cardImage').src = capturedImageData;
             }
+
             document.getElementById('cardPreview').style.display = 'flex';
         }
 
         function saveAndSend() {
             html2canvas(document.getElementById('cardPreview')).then(function (canvas) {
                 const imageData = canvas.toDataURL("image/png");
-                const a = document.createElement("a");
-                a.href = imageData;
-                a.download = "Carteirinha.png";
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
+
                 const phoneNumber = "5511979654420";
-                const message = "Olá, segue a Carteirinha de Identificação! Baixe a imagem e envie manualmente.";
-                const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+                const message = "Olá, segue a Carteirinha de Identificação!";
+                const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}&image=${encodeURIComponent(imageData)}`;
+
                 window.open(whatsappURL, "_blank");
             });
         }
