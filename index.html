@@ -200,8 +200,7 @@
         <input type="file" accept="image/*" id="fileInput" onchange="loadImageFromFile(event)" capture="camera" required>
         <img id="capturedImage" style="display:none;"><br>
 
-        <button type="button" onclick="generateCard()">Visualizar Carteirinha</button>
-        <button type="button" onclick="saveAndSend()">Salvar e Enviar via WhatsApp</button>
+        <button type="button" onclick="generateCardAndSave()">Gerar e Salvar via WhatsApp</button>
     </form>
 
     <div id="cardPreview" class="card" style="display:none;">
@@ -237,7 +236,6 @@
             }
         }
 
-        // Função para formatar a data no formato dd/mm/yyyy
         function formatDate(dateString) {
             const date = new Date(dateString);
             const day = String(date.getDate()).padStart(2, '0');
@@ -246,15 +244,14 @@
             return `${day}/${month}/${year}`;
         }
 
-        function generateCard() {
+        function generateCardAndSave() {
             const name = document.getElementById('name').value;
-            const phone = document.getElementById('phone').value;
             const position = document.getElementById('position').value;
             const baptismDate = formatDate(document.getElementById('baptismDate').value);
-            const dob = formatDate(document.getElementById('dob').value);
             const dizimista = document.getElementById('dizimista').checked ? "Dizimista" : "";
             const ebenezer = document.getElementById('ebenezer').checked ? "Ebenezer" : "";
 
+            // Exibindo a carteirinha
             document.getElementById('cardName').textContent = name;
             document.getElementById('cardBaptismDate').textContent = baptismDate;
             document.getElementById('cardPosition').textContent = position;
@@ -264,17 +261,16 @@
             }
 
             document.getElementById('cardPreview').style.display = 'flex';
-        }
 
-        function saveAndSend() {
+            // Gerar imagem da carteirinha para envio
             html2canvas(document.getElementById('cardPreview')).then(function (canvas) {
                 const imageData = canvas.toDataURL("image/png");
 
-                const phoneNumber = "5511979654420";
-                const message = "Olá, segue a Carteirinha de Identificação!";
-                const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}&image=${encodeURIComponent(imageData)}`;
-
-                window.open(whatsappURL, "_blank");
+                // Criar um link de download para a imagem gerada
+                const link = document.createElement('a');
+                link.href = imageData;
+                link.download = 'carteirinha.png';
+                link.click();
             });
         }
     </script>
