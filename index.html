@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IPRSM - Formulário de Membresia</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <title>IPRSM - Formulário Membresia</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
     <style>
         body {
             font-family: 'Roboto', sans-serif;
@@ -27,12 +27,14 @@
         }
 
         h2 {
+            color: #f1f1f1;
             margin: 0;
         }
 
         form {
             display: flex;
             flex-direction: column;
+            align-items: stretch;
             max-width: 700px;
             margin: auto;
             background: #1e1e1e;
@@ -53,6 +55,11 @@
             background: #333;
             font-size: 14px;
             color: #f1f1f1;
+        }
+
+        input:focus, select:focus {
+            border-color: #3498db;
+            outline: none;
         }
 
         button {
@@ -87,20 +94,22 @@
         .card {
             display: flex;
             align-items: center;
-            flex-direction: column;
+            justify-content: flex-start;
             width: 600px;
             height: 220px;
             background: #fff;
             padding: 15px;
-            border-radius: 15px;
+            border-radius: 10px; /* Bordas arredondadas */
             color: #000;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
             border: 5px solid #000;
+            flex-direction: column;
         }
 
         .card-header {
             display: flex;
             align-items: center;
+            justify-content: flex-start;
             width: 100%;
             margin-bottom: 10px;
             text-align: center;
@@ -115,6 +124,7 @@
         .card-header h3 {
             font-size: 18px;
             margin: 0;
+            color: #000;
         }
 
         .card-content {
@@ -125,22 +135,27 @@
         }
 
         .card img {
-            border-radius: 12px;
+            border-radius: 8px;
             width: 100px;
             height: 100px;
             object-fit: cover;
             margin-right: 15px;
         }
 
+        .card-info {
+            flex-grow: 1;
+        }
+
         .card-info p {
             margin: 5px 0;
+            color: #000;
         }
     </style>
 </head>
 <body>
     <div class="header">
         <img src="https://i.imgur.com/naHMr26.png" alt="Logo IPRSM" class="logo">
-        <h2>IPRSM - Formulário de Membresia</h2>
+        <h2>IPRSM - Formulário Membresia</h2>
     </div>
 
     <form id="idForm">
@@ -156,6 +171,9 @@
         <label for="phone">Telefone:</label>
         <input type="tel" id="phone" required placeholder="(XX) XXXXX-XXXX"><br>
 
+        <label for="address">Endereço:</label>
+        <input type="text" id="address" required><br>
+
         <label for="baptismDate">Data de Batismo:</label>
         <input type="date" id="baptismDate" required><br>
 
@@ -169,24 +187,33 @@
             <option value="Membro">Membro</option>
         </select><br>
 
+        <label>
+            <input type="checkbox" id="dizimista"> Dizimista
+        </label>
+
+        <label>
+            <input type="checkbox" id="ebenezer"> Ebenezer
+        </label><br>
+
         <label>Foto:</label>
-        <input type="file" accept="image/*" id="fileInput" onchange="loadImageFromFile(event)" required>
+        <input type="file" accept="image/*" id="fileInput" onchange="loadImageFromFile(event)" capture="camera" required>
         <img id="capturedImage" style="display:none;"><br>
 
-        <button type="button" onclick="generateCardAndSave()">Gerar e Baixar Carteirinha</button>
+        <button type="button" onclick="generateCardAndSendToWhatsApp()">Gerar e Enviar para WhatsApp</button>
     </form>
 
     <div id="cardPreview" class="card" style="display:none;">
         <div class="card-header">
-            <img src="https://i.imgur.com/naHMr26.png" alt="Logo">
+            <img src="https://i.imgur.com/naHMr26.png" alt="Logo" />
             <h3>IGREJA PRESBITERIANA RENOVADA DE SÃO MIGUEL</h3>
         </div>
         <div class="card-content">
-            <img id="cardImage" src="" alt="Foto">
+            <img id="cardImage" src="" alt="Foto" />
             <div class="card-info">
                 <p><strong>Nome:</strong> <span id="cardName"></span></p>
                 <p><strong>Data de Batismo:</strong> <span id="cardBaptismDate"></span></p>
                 <p><strong>Função:</strong> <span id="cardPosition"></span></p>
+                <p><strong>Status:</strong> <span id="cardStatus"></span></p>
             </div>
         </div>
     </div>
@@ -200,35 +227,93 @@
                 const reader = new FileReader();
                 reader.onload = function (e) {
                     capturedImageData = e.target.result;
-                    document.getElementById("capturedImage").src = capturedImageData;
-                    document.getElementById("capturedImage").style.display = "block";
+                    const img = document.getElementById("capturedImage");
+                    img.src = capturedImageData;
+                    img.style.display = "block";
                 };
                 reader.readAsDataURL(file);
             }
         }
 
-        function formatDate(dateStr) {
-            const [year, month, day] = dateStr.split("-");
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
             return `${day}/${month}/${year}`;
         }
 
-        function generateCardAndSave() {
-            document.getElementById('cardName').textContent = document.getElementById('name').value;
-            document.getElementById('cardBaptismDate').textContent = formatDate(document.getElementById('baptismDate').value);
-            document.getElementById('cardPosition').textContent = document.getElementById('position').value;
+        function validateCPF(cpf) {
+            cpf = cpf.replace(/[^\d]+/g, '');
+
+            if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) {
+                return false;
+            }
+
+            let sum = 0;
+            let remainder;
+
+            for (let i = 1; i <= 9; i++) {
+                sum += parseInt(cpf[i - 1]) * (11 - i);
+            }
+            remainder = (sum * 10) % 11;
+            if (remainder === 10 || remainder === 11) {
+                remainder = 0;
+            }
+            if (remainder !== parseInt(cpf[9])) {
+                return false;
+            }
+
+            sum = 0;
+            for (let i = 1; i <= 10; i++) {
+                sum += parseInt(cpf[i - 1]) * (12 - i);
+            }
+            remainder = (sum * 10) % 11;
+            if (remainder === 10 || remainder === 11) {
+                remainder = 0;
+            }
+            if (remainder !== parseInt(cpf[10])) {
+                return false;
+            }
+
+            return true;
+        }
+
+        function generateCardAndSendToWhatsApp() {
+            const name = document.getElementById('name').value;
+            const position = document.getElementById('position').value;
+            const baptismDate = formatDate(document.getElementById('baptismDate').value);
+            const cpf = document.getElementById('cpf').value;
+
+            if (!name || !position || !baptismDate || !cpf) {
+                alert('Todos os campos devem ser preenchidos!');
+                return;
+            }
+
+            if (!validateCPF(cpf)) {
+                alert('CPF inválido!');
+                return;
+            }
+
+            const dizimista = document.getElementById('dizimista').checked ? "Dizimista" : "";
+            const ebenezer = document.getElementById('ebenezer').checked ? "Ebenezer" : "";
+
+            document.getElementById('cardName').textContent = name;
+            document.getElementById('cardBaptismDate').textContent = baptismDate;
+            document.getElementById('cardPosition').textContent = position;
+            document.getElementById('cardStatus').textContent = `${dizimista} ${ebenezer}`.trim();
             if (capturedImageData) {
                 document.getElementById('cardImage').src = capturedImageData;
             }
+
             document.getElementById('cardPreview').style.display = 'flex';
 
-            setTimeout(() => {
-                html2canvas(document.getElementById('cardPreview'), { scale: 2 }).then(canvas => {
-                    const link = document.createElement('a');
-                    link.href = canvas.toDataURL("image/png");
-                    link.download = 'carteirinha.png';
-                    link.click();
-                });
-            }, 500);
+            const phoneNumber = "+5511979654420";
+            const message = `Segue carteirinha para análise. Meu nome é ${name} e minha função é ${position}.`;
+
+            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+
+            window.location.href = whatsappUrl;
         }
     </script>
 </body>
