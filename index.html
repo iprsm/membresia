@@ -353,6 +353,47 @@
             const whatsappURL = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
             window.open(whatsappURL, '_blank');
         }
+         <button type="button" onclick="sendToTrello()">Cadastrar no Trello</button>
+    </form>
+
+        async function sendToTrello() {
+            const name = document.getElementById('name').value;
+            const dob = document.getElementById('dob').value;
+            const cpf = document.getElementById('cpf').value;
+            const phone = document.getElementById('phone').value;
+            const address = document.getElementById('address').value;
+            const baptismDate = document.getElementById('baptismDate').value;
+            const position = document.getElementById('position').value;
+
+            const apiKey = 'SUA_API_KEY';
+            const token = 'SEU_TOKEN';
+            const listId = 'SEU_ID_DA_LISTA';
+            
+            const url = `https://api.trello.com/1/cards?key=${apiKey}&token=${token}&idList=${listId}`;
+
+            const data = {
+                name:  ${name}`,
+                desc: `Nome: ${name}\nNascimento: ${dob}\nCPF: ${cpf}\nTelefone: ${phone}\nEndereço: ${address}\nData de Batismo: ${baptismDate}\nFunção: ${position}`
+            };
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                if (response.ok) {
+                    alert('Cadastro enviado para o Trello com sucesso!');
+                } else {
+                    alert('Erro ao enviar para o Trello');
+                }
+            } catch (error) {
+                alert('Erro na comunicação com o Trello.');
+            }
+        }
+
     </script>
 </body>
 </html>
