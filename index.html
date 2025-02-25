@@ -103,6 +103,7 @@
             color: #f1f1f1;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
             border: 5px solid #fff; /* Borda branca ao redor da carteirinha */
+            flex-direction: column;
         }
 
         .card-header {
@@ -111,6 +112,7 @@
             justify-content: flex-start;
             width: 100%;
             margin-bottom: 10px;
+            text-align: center;
         }
 
         .card-header img {
@@ -120,9 +122,16 @@
         }
 
         .card-header h3 {
-            font-size: 16px;
+            font-size: 18px;
             margin: 0;
             color: #f1f1f1;
+        }
+
+        .card-content {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            margin-top: 10px;
         }
 
         .card img {
@@ -130,7 +139,6 @@
             width: 100px;
             height: 100px;
             object-fit: cover;
-            margin-top: 10px;
             margin-right: 15px; /* Distância entre a foto e os dados */
         }
 
@@ -153,7 +161,7 @@
 
     <form id="idForm">
         <label for="name">Nome:</label>
-        <input type="text" id="name" required>
+        <input type="text" id="name" required><br>
 
         <label for="dob">Data de Nascimento:</label>
         <input type="date" id="dob" required>
@@ -200,13 +208,15 @@
         <div class="card-header">
             <img src="https://i.imgur.com/naHMr26.png" alt="Logo" />
             <h3>IGREJA PRESBITERIANA RENOVADA DE SÃO MIGUEL</h3>
-        </div><br><br>
-        <img id="cardImage" src="" alt="Foto" />
-        <div class="card-info">
-            <p><strong>Nome:</strong> <span id="cardName"></span></p>
-            <p><strong>Data de Batismo:</strong> <span id="cardBaptismDate"></span></p>
-            <p><strong>Função:</strong> <span id="cardPosition"></span></p>
-            <p><strong>Status:</strong> <span id="cardStatus"></span></p>
+        </div>
+        <div class="card-content">
+            <img id="cardImage" src="" alt="Foto" />
+            <div class="card-info">
+                <p><strong>Nome:</strong> <span id="cardName"></span></p>
+                <p><strong>Data de Batismo:</strong> <span id="cardBaptismDate"></span></p>
+                <p><strong>Função:</strong> <span id="cardPosition"></span></p>
+                <p><strong>Status:</strong> <span id="cardStatus"></span></p>
+            </div>
         </div>
     </div>
 
