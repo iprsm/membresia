@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IPRSM - Formulario Membresia</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
     <style>
         body {
             font-family: 'Roboto', sans-serif;
@@ -89,6 +90,37 @@
                 width: 90%;
             }
         }
+
+        /* Layout da carteirinha */
+        .card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 600px;
+            height: 200px;
+            background: #1e1e1e;
+            padding: 15px;
+            border-radius: 10px;
+            color: #f1f1f1;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .card img {
+            border-radius: 8px;
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+        }
+
+        .card-info {
+            flex-grow: 1;
+            margin-left: 15px;
+        }
+
+        .card-info p {
+            margin: 5px 0;
+        }
+
     </style>
 </head>
 <body>
@@ -125,12 +157,12 @@
             <option value="Diácono(a)">Diácono(a)</option>
             <option value="Missionário(a)">Missionário(a)</option>
             <option value="Membro">Membro</option>
-        </select><br>
+        </select>
 
         <!-- Adicionando as caixas de seleção acima do campo Foto -->
         <label>
             <input type="checkbox" id="dizimista"> Dizimista
-        </label>
+        </label><br>
 
         <label>
             <input type="checkbox" id="ebenezer"> Ebenezer
@@ -140,12 +172,20 @@
         <input type="file" accept="image/*" id="fileInput" onchange="loadImageFromFile(event)" capture="camera" required>
         <img id="capturedImage" style="display:none;"><br>
 
-        <button type="button" onclick="validateAndGeneratePDF()">Gerar e Visualizar</button>
-        <button type="button" id="sendWhatsAppBtn" style="display:none;" onclick="sendViaWhatsApp()">Enviar pelo WhatsApp</button>
+        <button type="button" onclick="generateCard()">Salvar e Enviar via WhatsApp</button>
     </form>
 
+    <div id="cardPreview" class="card" style="display:none;">
+        <img id="cardImage" src="" alt="Foto" />
+        <div class="card-info">
+            <p><strong>Nome:</strong> <span id="cardName"></span></p>
+            <p><strong>Função:</strong> <span id="cardPosition"></span></p>
+            <p><strong>Telefone:</strong> <span id="cardPhone"></span></p>
+            <p><strong>Status:</strong> <span id="cardStatus"></span></p>
+        </div>
+    </div>
+
     <script>
-        let generatedPDFBlob = null;
         let capturedImageData = null;
 
         function loadImageFromFile(event) {
@@ -162,70 +202,34 @@
             }
         }
 
-        function validateAndGeneratePDF() {
-            const form = document.getElementById('idForm');
-            if (form.checkValidity()) {
-                generateAndPreviewPDF();
-            } else {
-                alert("Por favor, preencha todos os campos obrigatórios.");
-            }
-        }
-
-        function formatDate(inputDate) {
-            const date = new Date(inputDate);
-            const day = String(date.getDate()).padStart(2, '0');
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const year = date.getFullYear();
-            return `${day}/${month}/${year}`;
-        }
-
-        function generateAndPreviewPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
+        function generateCard() {
             const name = document.getElementById('name').value;
-            const dob = formatDate(document.getElementById('dob').value);
-            const cpf = document.getElementById('cpf').value;
             const phone = document.getElementById('phone').value;
-            const address = document.getElementById('address').value;
-            const baptismDate = formatDate(document.getElementById('baptismDate').value);
             const position = document.getElementById('position').value;
-
-            // Verificando se as caixas de seleção estão marcadas
             const dizimista = document.getElementById('dizimista').checked ? "Dizimista" : "";
             const ebenezer = document.getElementById('ebenezer').checked ? "Ebenezer" : "";
 
-            doc.setFontSize(22);
-            doc.text("Documento de Identificação", 20, 20);
-            doc.setFontSize(16);
-            doc.text(`Nome: ${name}`, 20, 40);
-            doc.text(`Data de Nascimento: ${dob}`, 20, 50);
-            doc.text(`CPF: ${cpf}`, 20, 60);
-            doc.text(`Telefone: ${phone}`, 20, 70);
-            doc.text(`Endereço: ${address}`, 20, 80);
-            doc.text(`Data de Batismo: ${baptismDate}`, 20, 90);
-            doc.text(`Função: ${position}`, 20, 100);
-
-            // Adicionando as informações das caixas de seleção
-            if (dizimista || ebenezer) {
-                doc.text(`Status: ${dizimista} ${ebenezer}`.trim(), 20, 110);
-            }
-
+            // Exibindo a carteirinha
+            document.getElementById('cardName').textContent = name;
+            document.getElementById('cardPhone').textContent = phone;
+            document.getElementById('cardPosition').textContent = position;
+            document.getElementById('cardStatus').textContent = `${dizimista} ${ebenezer}`.trim();
             if (capturedImageData) {
-                doc.addImage(capturedImageData, "PNG", 20, 120, 60, 60);
+                document.getElementById('cardImage').src = capturedImageData;
             }
 
-            generatedPDFBlob = doc.output("blob");
-            const pdfURL = URL.createObjectURL(generatedPDFBlob);
-            window.open(pdfURL, "_blank");
+            document.getElementById('cardPreview').style.display = 'flex';
 
-            document.getElementById('sendWhatsAppBtn').style.display = 'inline';
-        }
+            // Gerar imagem da carteirinha para envio
+            html2canvas(document.getElementById('cardPreview')).then(function (canvas) {
+                const imageData = canvas.toDataURL("image/png");
 
-        function sendViaWhatsApp() {
-            const phoneNumber = "5511979654420";
-            const message = "Olá, segue a Carteirinha de Identificação!";
-            const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-            window.open(whatsappURL, "_blank");
+                // Abrir WhatsApp com a imagem
+                const phoneNumber = "5511979654420";
+                const message = "Olá, segue a Carteirinha de Identificação!";
+                const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}&image=${encodeURIComponent(imageData)}`;
+                window.open(whatsappURL, "_blank");
+            });
         }
     </script>
 </body>
