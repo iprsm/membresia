@@ -127,11 +127,7 @@
             <option value="Membro">Membro</option>
         </select>
 
-        <label>Foto:</label>
-        <input type="file" accept="image/*" id="fileInput" onchange="loadImageFromFile(event)" capture="camera" required>
-        <img id="capturedImage" style="display:none;"><br>
-
-        <!-- Adicionando as caixas de seleção -->
+        <!-- Adicionando as caixas de seleção acima do campo Foto -->
         <label>
             <input type="checkbox" id="dizimista"> Dizimista
         </label><br>
@@ -139,6 +135,10 @@
         <label>
             <input type="checkbox" id="ebenezer"> Ebenezer
         </label><br>
+
+        <label>Foto:</label>
+        <input type="file" accept="image/*" id="fileInput" onchange="loadImageFromFile(event)" capture="camera" required>
+        <img id="capturedImage" style="display:none;"><br>
 
         <button type="button" onclick="validateAndGeneratePDF()">Gerar e Visualizar</button>
         <button type="button" id="sendWhatsAppBtn" style="display:none;" onclick="sendViaWhatsApp()">Enviar pelo WhatsApp</button>
