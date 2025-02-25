@@ -311,9 +311,11 @@
             const phoneNumber = "+5511979654420";
             const message = `Segue carteirinha para análise. Meu nome é ${name} e minha função é ${position}.`;
 
+            // Formata a mensagem corretamente
             const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
 
-            window.location.href = whatsappUrl;
+            // Redireciona para a conversa no WhatsApp
+            window.open(whatsappUrl, '_blank');
         }
     </script>
 </body>
