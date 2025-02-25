@@ -127,87 +127,80 @@
             <option value="Membro">Membro</option>
         </select>
 
-        <label>Foto:</label>
-        <input type="file" accept="image/*" id="fileInput" onchange="loadImageFromFile(event)" capture="camera" required>
-        <img id="capturedImage" style="display:none;"><br>
+       <label>
+    <input type="checkbox" id="dizimista"> Dizimista
+</label><br><br>
 
-        <button type="button" onclick="validateAndGeneratePDF()">Gerar e Visualizar</button>
-        <button type="button" id="sendWhatsAppBtn" style="display:none;" onclick="sendViaWhatsApp()">Enviar pelo WhatsApp</button>
-    </form>
+<label>
+    <input type="checkbox" id="ebenezer"> Ebenezer
+</label><br><br>
 
+<br><br>
+        
+        <label for="photo">Foto:</label>
+        <input type="file" id="photo" accept="image/*"><br><br>
+        
+        <button onclick="generateID()">Gerar Carteira</button>
+    </div>
+    
+    <div id="idCard" class="id-card" style="display:none;">
+        <img id="idPhoto" src="" alt="Foto do usuário">
+        <div class="id-info">
+            <p><strong>Nome:</strong> <span id="cardName"></span></p>
+            <p><strong>Data de Nascimento:</strong> <span id="cardDob"></span></p>
+            <p><strong>CPF:</strong> <span id="cardCpf"></span></p>
+            <p><strong>Telefone:</strong> <span id="cardPhone"></span></p>
+            <p><strong>Endereço:</strong> <span id="cardAddress"></span></p>
+            <p><strong>Data de Batismo:</strong> <span id="cardBaptismDate"></span></p>
+            <p><strong>Função:</strong> <span id="cardFunction"></span></p>
+        </div>
+    </div>
+    
+    <button class="save-button" onclick="saveAndSend()">Salvar e Enviar para WhatsApp</button>
+    
     <script>
-        let generatedPDFBlob = null;
-        let capturedImageData = null;
-
-        function loadImageFromFile(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    capturedImageData = e.target.result;
-                    const img = document.getElementById("capturedImage");
-                    img.src = capturedImageData;
-                    img.style.display = "block";
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function validateAndGeneratePDF() {
-            const form = document.getElementById('idForm');
-            if (form.checkValidity()) {
-                generateAndPreviewPDF();
-            } else {
-                alert("Por favor, preencha todos os campos obrigatórios.");
-            }
-        }
-
-        function formatDate(inputDate) {
-            const date = new Date(inputDate);
-            const day = String(date.getDate()).padStart(2, '0');
-            const month = String(date.getMonth() + 1).padStart(2, '0');
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const day = date.getDate().toString().padStart(2, '0');
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
             const year = date.getFullYear();
             return `${day}/${month}/${year}`;
         }
 
-        function generateAndPreviewPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            const name = document.getElementById('name').value;
-            const dob = formatDate(document.getElementById('dob').value);
-            const cpf = document.getElementById('cpf').value;
-            const phone = document.getElementById('phone').value;
-            const address = document.getElementById('address').value;
-            const baptismDate = formatDate(document.getElementById('baptismDate').value);
-            const position = document.getElementById('position').value;
-
-            doc.setFontSize(22);
-            doc.text("Documento de Identificação", 20, 20);
-            doc.setFontSize(16);
-            doc.text(`Nome: ${name}`, 20, 40);
-            doc.text(`Data de Nascimento: ${dob}`, 20, 50);
-            doc.text(`CPF: ${cpf}`, 20, 60);
-            doc.text(`Telefone: ${phone}`, 20, 70);
-            doc.text(`Endereço: ${address}`, 20, 80);
-            doc.text(`Data de Batismo: ${baptismDate}`, 20, 90);
-            doc.text(`Função: ${position}`, 20, 100);
-
-            if (capturedImageData) {
-                doc.addImage(capturedImageData, "PNG", 20, 110, 60, 60);
+        function generateID() {
+            document.getElementById('cardName').textContent = document.getElementById('name').value;
+            document.getElementById('cardDob').textContent = formatDate(document.getElementById('dob').value);
+            document.getElementById('cardCpf').textContent = document.getElementById('cpf').value;
+            document.getElementById('cardPhone').textContent = document.getElementById('phone').value;
+            document.getElementById('cardAddress').textContent = document.getElementById('address').value;
+            document.getElementById('cardBaptismDate').textContent = formatDate(document.getElementById('baptismDate').value);
+            document.getElementById('cardFunction').textContent = document.getElementById('function').value;
+            
+            const file = document.getElementById('photo').files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('idPhoto').src = e.target.result;
+                }
+                reader.readAsDataURL(file);
             }
-
-            generatedPDFBlob = doc.output("blob");
-            const pdfURL = URL.createObjectURL(generatedPDFBlob);
-            window.open(pdfURL, "_blank");
-
-            document.getElementById('sendWhatsAppBtn').style.display = 'inline';
+            
+            document.getElementById('idCard').style.display = 'flex';
         }
 
-        function sendViaWhatsApp() {
-            const phoneNumber = "5511979654420";
-            const message = "Olá, segue a Carteirinha de Identificação!";
-            const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-            window.open(whatsappURL, "_blank");
+        function saveAndSend() {
+            html2canvas(document.getElementById('idCard')).then(canvas => {
+                const image = canvas.toDataURL("image/png");
+                const link = `https://wa.me/5511979654420?text=Carteira%20de%20identificação%20gerada!`;
+                fetch(image)
+                    .then(res => res.blob())
+                    .then(blob => {
+                        const file = new File([blob], "carteirinha.png", { type: "image/png" });
+                        const formData = new FormData();
+                        formData.append("file", file);
+                        window.open(link, '_blank');
+                    });
+            });
         }
     </script>
 </body>
