@@ -10,8 +10,8 @@
             font-family: 'Roboto', sans-serif;
             padding: 20px;
             margin: 0;
-            background-color: #121212; /* Fundo escuro */
-            color: #f1f1f1; /* Texto claro */
+            background-color: #121212;
+            color: #f1f1f1;
         }
 
         .header {
@@ -22,12 +22,12 @@
         }
 
         .logo {
-            width: 50px; /* Ajuste o tamanho do logo conforme necessário */
-            margin-right: 10px; /* Espaçamento entre o logo e o título */
+            width: 50px;
+            margin-right: 10px;
         }
 
         h2 {
-            color: #f1f1f1; /* Cor azul para o título */
+            color: #f1f1f1;
             margin: 0;
         }
 
@@ -37,7 +37,7 @@
             align-items: stretch;
             max-width: 700px;
             margin: auto;
-            background: #1e1e1e; /* Fundo mais suave para o formulário */
+            background: #1e1e1e;
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
@@ -45,7 +45,7 @@
 
         label {
             margin-bottom: 8px;
-            color: #bdc3c7; /* Cor mais suave para os labels */
+            color: #bdc3c7;
         }
 
         input, select {
@@ -54,27 +54,28 @@
             border-radius: 8px;
             background: #333;
             font-size: 14px;
-            color: #f1f1f1; /* Texto claro nos campos */
+            color: #f1f1f1;
         }
 
         input:focus, select:focus {
-            border-color: #3498db; /* Cor azul ao focar no input/select */
+            border-color: #3498db;
             outline: none;
         }
 
         button {
             cursor: pointer;
-            background-color: #3498db; /* Cor de fundo azul para os botões */
+            background-color: #3498db;
             color: white;
             border: none;
             border-radius: 8px;
             padding: 12px;
             font-size: 16px;
             transition: background-color 0.3s ease;
+            margin-top: 20px;
         }
 
         button:hover {
-            background-color: #2980b9; /* Cor mais escura ao passar o mouse */
+            background-color: #2980b9;
         }
 
         #capturedImage {
@@ -90,19 +91,18 @@
             }
         }
 
-        /* Layout da carteirinha */
         .card {
             display: flex;
             align-items: center;
             justify-content: flex-start;
             width: 600px;
             height: 220px;
-            background: #fff; /* Fundo branco para a carteirinha */
+            background: #fff;
             padding: 15px;
             border-radius: 10px;
-            color: #000; /* Texto preto */
+            color: #000;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            border: 5px solid #000; /* Borda preta */
+            border: 5px solid #000;
             flex-direction: column;
         }
 
@@ -124,7 +124,7 @@
         .card-header h3 {
             font-size: 18px;
             margin: 0;
-            color: #000; /* Texto preto no cabeçalho */
+            color: #000;
         }
 
         .card-content {
@@ -139,7 +139,7 @@
             width: 100px;
             height: 100px;
             object-fit: cover;
-            margin-right: 15px; /* Distância entre a foto e os dados */
+            margin-right: 15px;
         }
 
         .card-info {
@@ -148,16 +148,15 @@
 
         .card-info p {
             margin: 5px 0;
-            color: #000; /* Texto preto nos dados da carteirinha */
+            color: #000;
         }
 
     </style>
 </head>
 <body>
-    <!-- Cabeçalho com logo e título -->
     <div class="header">
         <img src="https://i.imgur.com/naHMr26.png" alt="Logo IPRSM" class="logo">
-        <h2>Cadastro de Membros</h2>
+        <h2>IPRSM - Formulario Membresia</h2>
     </div>
 
     <form id="idForm">
@@ -189,7 +188,6 @@
             <option value="Membro">Membro</option>
         </select><br>
 
-        <!-- Adicionando as caixas de seleção acima do campo Foto -->
         <label>
             <input type="checkbox" id="dizimista"> Dizimista
         </label>
@@ -202,7 +200,8 @@
         <input type="file" accept="image/*" id="fileInput" onchange="loadImageFromFile(event)" capture="camera" required>
         <img id="capturedImage" style="display:none;"><br>
 
-        <button type="button" onclick="generateCard()">Salvar e Enviar via WhatsApp</button>
+        <button type="button" onclick="generateCard()">Visualizar Carteirinha</button>
+        <button type="button" onclick="saveAndSend()">Salvar e Enviar via WhatsApp</button>
     </form>
 
     <div id="cardPreview" class="card" style="display:none;">
@@ -242,7 +241,7 @@
         function formatDate(dateString) {
             const date = new Date(dateString);
             const day = String(date.getDate()).padStart(2, '0');
-            const month = String(date.getMonth() + 1).padStart(2, '0'); // Janeiro é 0, então somamos 1
+            const month = String(date.getMonth() + 1).padStart(2, '0');
             const year = date.getFullYear();
             return `${day}/${month}/${year}`;
         }
@@ -251,12 +250,11 @@
             const name = document.getElementById('name').value;
             const phone = document.getElementById('phone').value;
             const position = document.getElementById('position').value;
-            const baptismDate = formatDate(document.getElementById('baptismDate').value); // Formatando a data de batismo
-            const dob = formatDate(document.getElementById('dob').value); // Formatando a data de nascimento
+            const baptismDate = formatDate(document.getElementById('baptismDate').value);
+            const dob = formatDate(document.getElementById('dob').value);
             const dizimista = document.getElementById('dizimista').checked ? "Dizimista" : "";
             const ebenezer = document.getElementById('ebenezer').checked ? "Ebenezer" : "";
 
-            // Exibindo a carteirinha
             document.getElementById('cardName').textContent = name;
             document.getElementById('cardBaptismDate').textContent = baptismDate;
             document.getElementById('cardPosition').textContent = position;
@@ -266,17 +264,16 @@
             }
 
             document.getElementById('cardPreview').style.display = 'flex';
+        }
 
-            // Gerar imagem da carteirinha para envio
+        function saveAndSend() {
             html2canvas(document.getElementById('cardPreview')).then(function (canvas) {
                 const imageData = canvas.toDataURL("image/png");
 
-                // Gerar o link do WhatsApp com a imagem
                 const phoneNumber = "5511979654420";
                 const message = "Olá, segue a Carteirinha de Identificação!";
                 const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}&image=${encodeURIComponent(imageData)}`;
 
-                // Abre o WhatsApp com a imagem
                 window.open(whatsappURL, "_blank");
             });
         }
