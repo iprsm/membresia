@@ -11,8 +11,8 @@
             font-family: 'Roboto', sans-serif;
             padding: 20px;
             margin: 0;
-            background-color: #121212; /* Fundo escuro */
-            color: #f1f1f1; /* Texto claro */
+            background-color: #121212; 
+            color: #f1f1f1; 
         }
 
         .header {
@@ -23,12 +23,12 @@
         }
 
         .logo {
-            width: 50px; /* Ajuste o tamanho do logo conforme necessário */
-            margin-right: 10px; /* Espaçamento entre o logo e o título */
+            width: 50px; 
+            margin-right: 10px; 
         }
 
         h2 {
-            color: #f1f1f1; /* Cor azul para o título */
+            color: #f1f1f1; 
             margin: 0;
         }
 
@@ -38,7 +38,7 @@
             align-items: stretch;
             max-width: 700px;
             margin: auto;
-            background: #1e1e1e; /* Fundo mais suave para o formulário */
+            background: #1e1e1e; 
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
@@ -46,7 +46,7 @@
 
         label {
             margin-bottom: 8px;
-            color: #bdc3c7; /* Cor mais suave para os labels */
+            color: #bdc3c7; 
         }
 
         input, select {
@@ -55,17 +55,17 @@
             border-radius: 8px;
             background: #333;
             font-size: 14px;
-            color: #f1f1f1; /* Texto claro nos campos */
+            color: #f1f1f1; 
         }
 
         input:focus, select:focus {
-            border-color: #3498db; /* Cor azul ao focar no input/select */
+            border-color: #3498db; 
             outline: none;
         }
 
         button {
             cursor: pointer;
-            background-color: #3498db; /* Cor de fundo azul para os botões */
+            background-color: #3498db; 
             color: white;
             border: none;
             border-radius: 8px;
@@ -75,7 +75,7 @@
         }
 
         button:hover {
-            background-color: #2980b9; /* Cor mais escura ao passar o mouse */
+            background-color: #2980b9; 
         }
 
         #capturedImage {
@@ -91,7 +91,7 @@
             }
         }
 
-        /* Layout da carteirinha */
+        
         .card {
             display: flex;
             align-items: center;
@@ -124,7 +124,7 @@
     </style>
 </head>
 <body>
-    <!-- Cabeçalho com logo e título -->
+    
     <div class="header">
         <img src="https://i.imgur.com/naHMr26.png" alt="Logo IPRSM" class="logo">
         <h2>IPRSM - Formulario Membresia</h2>
@@ -157,12 +157,12 @@
             <option value="Diácono(a)">Diácono(a)</option>
             <option value="Missionário(a)">Missionário(a)</option>
             <option value="Membro">Membro</option>
-        </select>
+        </select><br>
 
-        <!-- Adicionando as caixas de seleção acima do campo Foto -->
+       
         <label>
             <input type="checkbox" id="dizimista"> Dizimista
-        </label><br>
+        </label>
 
         <label>
             <input type="checkbox" id="ebenezer"> Ebenezer
@@ -209,7 +209,7 @@
             const dizimista = document.getElementById('dizimista').checked ? "Dizimista" : "";
             const ebenezer = document.getElementById('ebenezer').checked ? "Ebenezer" : "";
 
-            // Exibindo a carteirinha
+            
             document.getElementById('cardName').textContent = name;
             document.getElementById('cardPhone').textContent = phone;
             document.getElementById('cardPosition').textContent = position;
@@ -220,11 +220,11 @@
 
             document.getElementById('cardPreview').style.display = 'flex';
 
-            // Gerar imagem da carteirinha para envio
+            
             html2canvas(document.getElementById('cardPreview')).then(function (canvas) {
                 const imageData = canvas.toDataURL("image/png");
 
-                // Abrir WhatsApp com a imagem
+                
                 const phoneNumber = "5511979654420";
                 const message = "Olá, segue a Carteirinha de Identificação!";
                 const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}&image=${encodeURIComponent(imageData)}`;
