@@ -244,10 +244,61 @@
             return `${day}/${month}/${year}`;
         }
 
+        function validateCPF(cpf) {
+            // Remove non-numeric characters
+            cpf = cpf.replace(/[^\d]+/g, '');
+
+            if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) {
+                return false;
+            }
+
+            let sum = 0;
+            let remainder;
+
+            for (let i = 1; i <= 9; i++) {
+                sum += parseInt(cpf[i - 1]) * (11 - i);
+            }
+            remainder = (sum * 10) % 11;
+            if (remainder === 10 || remainder === 11) {
+                remainder = 0;
+            }
+            if (remainder !== parseInt(cpf[9])) {
+                return false;
+            }
+
+            sum = 0;
+            for (let i = 1; i <= 10; i++) {
+                sum += parseInt(cpf[i - 1]) * (12 - i);
+            }
+            remainder = (sum * 10) % 11;
+            if (remainder === 10 || remainder === 11) {
+                remainder = 0;
+            }
+            if (remainder !== parseInt(cpf[10])) {
+                return false;
+            }
+
+            return true;
+        }
+
         function generateCardAndSave() {
             const name = document.getElementById('name').value;
             const position = document.getElementById('position').value;
             const baptismDate = formatDate(document.getElementById('baptismDate').value);
+            const cpf = document.getElementById('cpf').value;
+
+            // Validação dos campos obrigatórios
+            if (!name || !position || !baptismDate || !cpf) {
+                alert('Todos os campos devem ser preenchidos!');
+                return;
+            }
+
+            // Validação CPF
+            if (!validateCPF(cpf)) {
+                alert('CPF inválido!');
+                return;
+            }
+
             const dizimista = document.getElementById('dizimista').checked ? "Dizimista" : "";
             const ebenezer = document.getElementById('ebenezer').checked ? "Ebenezer" : "";
 
@@ -271,8 +322,10 @@
                 link.href = imageData;
                 link.download = 'carteirinha.png';
 
-                // Clicar no link para iniciar o download
+                // Tentar iniciar o download
+                document.body.appendChild(link);
                 link.click();
+                document.body.removeChild(link);
             });
         }
     </script>
