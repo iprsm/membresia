@@ -131,6 +131,15 @@
         <input type="file" accept="image/*" id="fileInput" onchange="loadImageFromFile(event)" capture="camera" required>
         <img id="capturedImage" style="display:none;"><br>
 
+        <!-- Adicionando as caixas de seleção -->
+        <label>
+            <input type="checkbox" id="dizimista"> Dizimista
+        </label><br>
+
+        <label>
+            <input type="checkbox" id="ebenezer"> Ebenezer
+        </label><br>
+
         <button type="button" onclick="validateAndGeneratePDF()">Gerar e Visualizar</button>
         <button type="button" id="sendWhatsAppBtn" style="display:none;" onclick="sendViaWhatsApp()">Enviar pelo WhatsApp</button>
     </form>
@@ -181,6 +190,10 @@
             const baptismDate = formatDate(document.getElementById('baptismDate').value);
             const position = document.getElementById('position').value;
 
+            // Verificando se as caixas de seleção estão marcadas
+            const dizimista = document.getElementById('dizimista').checked ? "Dizimista" : "";
+            const ebenezer = document.getElementById('ebenezer').checked ? "Ebenezer" : "";
+
             doc.setFontSize(22);
             doc.text("Documento de Identificação", 20, 20);
             doc.setFontSize(16);
@@ -192,8 +205,13 @@
             doc.text(`Data de Batismo: ${baptismDate}`, 20, 90);
             doc.text(`Função: ${position}`, 20, 100);
 
+            // Adicionando as informações das caixas de seleção
+            if (dizimista || ebenezer) {
+                doc.text(`Status: ${dizimista} ${ebenezer}`.trim(), 20, 110);
+            }
+
             if (capturedImageData) {
-                doc.addImage(capturedImageData, "PNG", 20, 110, 60, 60);
+                doc.addImage(capturedImageData, "PNG", 20, 120, 60, 60);
             }
 
             generatedPDFBlob = doc.output("blob");
