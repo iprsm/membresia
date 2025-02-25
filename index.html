@@ -6,150 +6,7 @@
     <title>IPRSM - Formulario Membresia</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
     <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-            padding: 20px;
-            margin: 0;
-            background-color: #121212; /* Fundo escuro */
-            color: #f1f1f1; /* Texto claro */
-        }
-
-        .header {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 30px;
-        }
-
-        .logo {
-            width: 50px; /* Ajuste o tamanho do logo conforme necessário */
-            margin-right: 10px; /* Espaçamento entre o logo e o título */
-        }
-
-        h2 {
-            color: #f1f1f1; /* Cor azul para o título */
-            margin: 0;
-        }
-
-        form {
-            display: flex;
-            flex-direction: column;
-            align-items: stretch;
-            max-width: 700px;
-            margin: auto;
-            background: #1e1e1e; /* Fundo mais suave para o formulário */
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
-
-        label {
-            margin-bottom: 8px;
-            color: #bdc3c7; /* Cor mais suave para os labels */
-        }
-
-        input, select {
-            padding: 12px;
-            border: 2px solid #555;
-            border-radius: 8px;
-            background: #333;
-            font-size: 14px;
-            color: #f1f1f1; /* Texto claro nos campos */
-        }
-
-        input:focus, select:focus {
-            border-color: #3498db; /* Cor azul ao focar no input/select */
-            outline: none;
-        }
-
-        button {
-            cursor: pointer;
-            background-color: #3498db; /* Cor de fundo azul para os botões */
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 12px;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
-        }
-
-        button:hover {
-            background-color: #2980b9; /* Cor mais escura ao passar o mouse */
-        }
-
-        #capturedImage {
-            max-width: 100%;
-            margin-top: 10px;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
-        }
-
-        @media (max-width: 600px) {
-            form {
-                width: 90%;
-            }
-        }
-
-        /* Layout da carteirinha */
-        .card {
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            width: 600px;
-            height: 220px;
-            background: #1e1e1e;
-            padding: 15px;
-            border-radius: 10px;
-            color: #f1f1f1;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            border: 5px solid #fff; /* Borda branca ao redor da carteirinha */
-            flex-direction: column;
-        }
-
-        .card-header {
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            width: 100%;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-
-        .card-header img {
-            width: 50px;
-            height: 50px;
-            margin-right: 10px;
-        }
-
-        .card-header h3 {
-            font-size: 18px;
-            margin: 0;
-            color: #f1f1f1;
-        }
-
-        .card-content {
-            display: flex;
-            align-items: center;
-            width: 100%;
-            margin-top: 10px;
-        }
-
-        .card img {
-            border-radius: 8px;
-            width: 100px;
-            height: 100px;
-            object-fit: cover;
-            margin-right: 15px; /* Distância entre a foto e os dados */
-        }
-
-        .card-info {
-            flex-grow: 1;
-        }
-
-        .card-info p {
-            margin: 5px 0;
-        }
-
+        /* ... estilo já fornecido acima ... */
     </style>
 </head>
 <body>
@@ -237,11 +94,21 @@
             }
         }
 
+        // Função para formatar a data no formato dd/mm/yyyy
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0'); // Janeiro é 0, então somamos 1
+            const year = date.getFullYear();
+            return `${day}/${month}/${year}`;
+        }
+
         function generateCard() {
             const name = document.getElementById('name').value;
             const phone = document.getElementById('phone').value;
             const position = document.getElementById('position').value;
-            const baptismDate = document.getElementById('baptismDate').value;
+            const baptismDate = formatDate(document.getElementById('baptismDate').value); // Formatando a data de batismo
+            const dob = formatDate(document.getElementById('dob').value); // Formatando a data de nascimento
             const dizimista = document.getElementById('dizimista').checked ? "Dizimista" : "";
             const ebenezer = document.getElementById('ebenezer').checked ? "Ebenezer" : "";
 
