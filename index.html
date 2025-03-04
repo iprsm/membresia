@@ -97,7 +97,6 @@
 
         <label for="cep">CEP:</label>
         <input type="text" id="cep" placeholder="XXXXX-XXX" maxlength="9" required>
-        <button type="button" onclick="fetchAddress()">Buscar Endereço</button>
 
         <label for="address">Endereço:</label>
         <input type="text" id="address" required>
@@ -108,11 +107,12 @@
         <label for="position">Função:</label>
         <select id="position" required>
             <option value="">Selecione a Função</option>
-            <option value="Pastor(a)">Pastor(a)</option>
+            <option value="Pastor(a) Titular">Pastor(a) Titular</option>
+            <option value="Pastor(a) Auxiliar">Pastor(a) Auxiliar</option>
             <option value="Presbítero(a)">Presbítero(a)</option>
             <option value="Diácono(a)">Diácono(a)</option>
             <option value="Missionário(a)">Missionário(a)</option>
-            <option value="Membro">Membro</option>
+            <option value="Membro(a)">Membro(a)</option>
         </select>
 
         <!-- Novos Campos -->
@@ -203,12 +203,18 @@
             }
         }
 
+        let cepTimeout; // Variável para debounce da busca do CEP
+
+        document.getElementById('cep').addEventListener('input', function () {
+            clearTimeout(cepTimeout);
+            cepTimeout = setTimeout(() => {
+                fetchAddress();
+            }, 500);
+        });
+
         async function fetchAddress() {
             const cep = document.getElementById('cep').value.replace(/\D/g, '');
-            if (cep.length !== 8) {
-                alert('CEP inválido. Deve ter 8 dígitos.');
-                return;
-            }
+            if (cep.length !== 8) return;
 
             try {
                 const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
@@ -249,21 +255,21 @@
 
             const cardTitle = `${name}`;
             const cardDescription = `
-Nome: ${name}
-Data de Nascimento: ${dob}
-CPF: ${cpf}
-Telefone: ${phone}
-CEP: ${cep}
-Endereço: ${address}
-Data de Batismo: ${baptismDate}
-Função: ${position}
-Nome do Pai: ${fatherName}
-Nome da Mãe: ${motherName}
-Data de Emissão: ${issueDate}
-Data de Validade: ${validityDate}
-Nº de Registro: ${regNumber}
-Dizimista: ${dizimista}
-Ebenezer: ${ebenezer}
+**Nome:** ${name}
+**Data de Nascimento:** ${dob}
+**CPF:** ${cpf}
+**Telefone:** ${phone}
+**CEP:** ${cep}
+**Endereço:** ${address}
+**Data de Batismo:** ${baptismDate}
+**Função:** ${position}
+**Nome do Pai:** ${fatherName}
+**Nome da Mãe:** ${motherName}
+**Data de Emissão:** ${issueDate}
+**Data de Validade:** ${validityDate}
+**Nº de Registro:** ${regNumber}
+**Dizimista:** ${dizimista}
+**Ebenezer:** ${ebenezer}
             `;
 
             const apiKey = '580b929cd3fd23399eb5a3cbeac8e3df';
