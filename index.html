@@ -150,6 +150,10 @@
         let imageFile = null;
         let regNumberCounter = 1; // Inicializa o contador de registros (geralmente isso seria armazenado em algum lugar persistente)
 
+        // IDs das etiquetas (preencha com os valores encontrados no Trello)
+        const dizimistaLabelId = '67c777cb612091753a2b1c9c';  // Substitua pelo ID correto
+        const ebenezerLabelId = '67c777cb612091753a2b1c9d';   // Substitua pelo ID correto
+
         // Função para mostrar a imagem capturada ou carregada
         function previewImage(event) {
             const file = event.target.files[0];
@@ -272,12 +276,15 @@
 **Ebenezer:** ${ebenezer}
             `;
 
+            let labelIds = [];
+            if (document.getElementById('dizimista').checked) labelIds.push(dizimistaLabelId);
+            if (document.getElementById('ebenezer').checked) labelIds.push(ebenezerLabelId);
+
             const apiKey = '580b929cd3fd23399eb5a3cbeac8e3df';
             const token = 'ATTA1a5ed79744840ebea79fcedb6c88ead3bddca932a9d5ab5191dbb8722dfd9083E14CC719';
-            const boardId = '67891789508c1cc4f9ab7d59';
-            const listId = '67891789508c1cc4f9ab7d59';
+            const listId = '67891789508c1cc4f9ab7d59';  // ID da lista do Trello
 
-            const url = `https://api.trello.com/1/cards?key=${apiKey}&token=${token}&idList=${listId}&name=${encodeURIComponent(cardTitle)}&desc=${encodeURIComponent(cardDescription)}`;
+            const url = `https://api.trello.com/1/cards?key=${apiKey}&token=${token}&idList=${listId}&name=${encodeURIComponent(cardTitle)}&desc=${encodeURIComponent(cardDescription)}&idLabels=${labelIds.join(',')}`;
 
             try {
                 const response = await fetch(url, { method: "POST", headers: { "Accept": "application/json" } });
