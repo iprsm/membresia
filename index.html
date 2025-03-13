@@ -189,7 +189,7 @@
         // Buscar a quantidade de cartões na lista do Trello e gerar o número de registro
         async function getTrelloCardCount() {
             const apiKey = '580b929cd3fd23399eb5a3cbeac8e3df';  // Seu API Key do Trello
-            const token = 'ATTA1a5ed79744840ebea79fcedb6c88ead3bddca932a9d5ab5191dbb8722dfd9083E14CC719';  // Seu Token do Trello
+            const token = 'ATTA55a2b891b3ff2eee530ea153c385878e1477d3922646369ecbc140a45aea6597E601FAC0';  // Seu Token do Trello
             const listId = '67891789508c1cc4f9ab7d59';  // ID da lista do Trello que você deseja acessar
 
             const url = `https://api.trello.com/1/lists/${listId}/cards?key=${apiKey}&token=${token}`;
@@ -281,7 +281,7 @@
             if (document.getElementById('ebenezer').checked) labelIds.push(ebenezerLabelId);
 
             const apiKey = '580b929cd3fd23399eb5a3cbeac8e3df';
-            const token = 'ATTA1a5ed79744840ebea79fcedb6c88ead3bddca932a9d5ab5191dbb8722dfd9083E14CC719';
+            const token = 'ATTA55a2b891b3ff2eee530ea153c385878e1477d3922646369ecbc140a45aea6597E601FAC0';
             const listId = '67891789508c1cc4f9ab7d59';  // ID da lista do Trello
 
             const url = `https://api.trello.com/1/cards?key=${apiKey}&token=${token}&idList=${listId}&name=${encodeURIComponent(cardTitle)}&desc=${encodeURIComponent(cardDescription)}&idLabels=${labelIds.join(',')}`;
