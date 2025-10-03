@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPRSM - Gerador</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+     body {
+            font-family: 'Arial', sans-serif;
+            background-color: #121212;
+            color: #E0E0E0;
+            text-align: center;
+            padding: 20px;
+        }
+
+        h2 {
+            color: #FFFFFF;
+        }
+
+        select {
+            background-color: #1E1E1E;
+            color: #E0E0E0;
+            border: 1px solid #FFFFFF;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background-color: #1E1E1E;
+            border: 1px solid #FFFFFF;
+            padding: 20px;
+            width: 300px;
+            margin: 20px auto;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(187, 134, 252, 0.5);
+            display: none;
+        }
+
+        img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 2px solid #FFFFFF;
+            margin: 10px 0;
+        }
+
+        button {
+            background-color: #FFFFFF;
+            color: #121212;
+            border: none;
+            padding: 10px 15px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background-color: #9A67EA;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="https://i.imgur.com/naHMr26.png" alt="Logo IPRSM" class="logo">
+        <h2>IPRSM - Carteira de Identificação de Membros</h2>
+    </div>
+    <select id="membersList" onchange="generateCard()">
+        <option value="">Selecione o Membro</option>
+    </select>
+    <div id="idCard" class="card">
+        <h3 id="cardName"></h3>
+        <p><strong>CPF:</strong> <span id="cardCPF"></span></p>
+        <p><strong>Cargo:</strong> <span id="cardRole"></span></p>
+        <p><strong>Batismo:</strong> <span id="cardBaptism"></span></p>
+        <p><strong>Pai:</strong> <span id="cardFather"></span></p>
+        <p><strong>Mãe:</strong> <span id="cardMother"></span></p>
+        <p><strong>Registro:</strong> <span id="cardReg"></span></p>
+        <p><strong>Emitido:</strong> <span id="cardEmission"></span></p>
+        <p><strong>Válido até:</strong> <span id="cardExpiry"></span></p>
+        <img id="cardPhoto" src="" alt="Foto">
+    </div>
+    <button onclick="downloadPDF()">Baixar PDF</button>
+
+    <script>
+        const apiKey = '580b929cd3fd23399eb5a3cbeac8e3df';
+        const token = 'ATTA1a5ed79744840ebea79fcedb6c88ead3bddca932a9d5ab5191dbb8722dfd9083E14CC719';
+        const boardId = '67891789508c1cc4f9ab7d59';
+
+        async function fetchMembers() {
+            try {
+                const url = `https://api.trello.com/1/boards/${boardId}/cards?attachments=true&key=${apiKey}&token=${token}`;
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Erro ao buscar dados no Trello');
+                const cards = await response.json();
+                const membersList = document.getElementById("membersList");
+                membersList.innerHTML = '<option value="">Selecione um membro</option>';
+
+                cards.forEach(card => {
+                    let [name, reg, emission, expiry, cpf, baptism, father, mother] = card.desc.split("|");
+                    membersList.innerHTML += `<option value='${JSON.stringify({
+                        name, reg, emission, expiry, cpf, baptism, father, mother,
+                        image: card.attachments[0]?.url || ''
+                    })}'>${name} - Registro: ${reg}</option>`;
+                });
+            } catch (error) {
+                console.error('Erro ao carregar membros:', error);
+            }
+        }
+
+        function generateCard() {
+            const member = JSON.parse(document.getElementById("membersList").value);
+            if (!member) return;
+            document.getElementById("cardName").innerText = member.name;
+            document.getElementById("cardCPF").innerText = member.cpf;
+            document.getElementById("cardRole").innerText = "Membro";
+            document.getElementById("cardBaptism").innerText = member.baptism;
+            document.getElementById("cardFather").innerText = member.father;
+            document.getElementById("cardMother").innerText = member.mother;
+            document.getElementById("cardReg").innerText = member.reg;
+            document.getElementById("cardEmission").innerText = member.emission;
+            document.getElementById("cardExpiry").innerText = member.expiry;
+            document.getElementById("cardPhoto").src = member.image || "https://via.placeholder.com/100";
+            document.getElementById("idCard").style.display = "block";
+        }
+
+        function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.text("Carteira de Membro", 20, 20);
+            doc.text("Nome: " + document.getElementById("cardName").innerText, 20, 40);
+            doc.text("CPF: " + document.getElementById("cardCPF").innerText, 20, 50);
+            doc.text("Batismo: " + document.getElementById("cardBaptism").innerText, 20, 60);
+            doc.text("Pai: " + document.getElementById("cardFather").innerText, 20, 70);
+            doc.text("Mãe: " + document.getElementById("cardMother").innerText, 20, 80);
+            doc.text("Registro: " + document.getElementById("cardReg").innerText, 20, 90);
+            doc.text("Emitido: " + document.getElementById("cardEmission").innerText, 20, 100);
+            doc.text("Válido até: " + document.getElementById("cardExpiry").innerText, 20, 110);
+            doc.save("carteira_de_membro.pdf");
+        }
+
+        window.onload = fetchMembers;
+    </script>
+</body>
+</html>
