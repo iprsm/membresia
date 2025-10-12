@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>IPRSM - Cadastro de Membros</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
     body {
@@ -57,11 +56,7 @@
         margin-top: 10px;
         display: none;
     }
-    #qrcode {
-        text-align: center;
-        margin-top: 20px;
-    }
-    input[readonly] { background-color: #2a2a2a; cursor: not-allowed; }
+    #qrcode { text-align: center; margin-top: 20px; }
 </style>
 </head>
 <body>
@@ -122,11 +117,8 @@
     <input type="file" accept="image/*" id="fileInput" onchange="previewImage(event)">
     <img id="preview">
 
-    <label for="dizimista">Dizimista:</label>
-    <input type="checkbox" id="dizimista">
-
-    <label for="ebenezer">Ebenezer:</label>
-    <input type="checkbox" id="ebenezer">
+    <label><input type="checkbox" id="dizimista"> Dizimista</label>
+    <label><input type="checkbox" id="ebenezer"> Ebenezer</label>
 
     <button type="button" onclick="sendToTrello()">Salvar</button>
 </form>
@@ -136,6 +128,10 @@
 <script>
 let imageFile = null;
 let regNumberCounter = 1;
+
+const apiKey = '580b929cd3fd23399eb5a3cbeac8e3df';
+const token = 'ATTA55a2b891b3ff2eee530ea153c385878e1477d3922646369ecbc140a45aea6597E601FAC0';
+const listId = '67891789508c1cc4f9ab7d59';
 const dizimistaLabelId = '67c777cb612091753a2b1c9c';
 const ebenezerLabelId = '67c777cb612091753a2b1c9d';
 
@@ -165,64 +161,96 @@ function formatRegNumber(number) {
 }
 
 async function getTrelloCardCount() {
-    const apiKey = '580b929cd3fd23399eb5a3cbeac8e3df';
-    const token = 'ATTA55a2b891b3ff2eee530ea153c385878e1477d3922646369ecbc140a45aea6597E601FAC0';
-    const listId = '67891789508c1cc4f9ab7d59';
     const url = `https://api.trello.com/1/lists/${listId}/cards?key=${apiKey}&token=${token}`;
-    try {
-        const response = await fetch(url);
-        const data = await response.json();
-        regNumberCounter = data.length + 1;
-        document.getElementById('regNumber').value = formatRegNumber(regNumberCounter);
-    } catch (error) {
-        console.error('Erro ao obter cartões do Trello:', error);
-        alert("Erro ao obter dados do Trello.");
-    }
+    const response = await fetch(url);
+    const data = await response.json();
+    regNumberCounter = data.length + 1;
+    document.getElementById('regNumber').value = formatRegNumber(regNumberCounter);
 }
 
 async function sendToTrello() {
     const name = document.getElementById('name').value;
     const cpf = document.getElementById('cpf').value;
     const regNumber = document.getElementById('regNumber').value;
-    if (!name || !cpf) {
-        alert("Preencha os campos obrigatórios!");
-        return;
-    }
+    if (!name || !cpf) return alert("Preencha os campos obrigatórios!");
 
-    const apiKey = '580b929cd3fd23399eb5a3cbeac8e3df';
-    const token = 'ATTA55a2b891b3ff2eee530ea153c385878e1477d3922646369ecbc140a45aea6597E601FAC0';
-    const listId = '67891789508c1cc4f9ab7d59';
-    const url = `https://api.trello.com/1/cards?key=${apiKey}&token=${token}&idList=${listId}&name=${encodeURIComponent(name)}`;
+    const desc = `
+**Nome:** ${name}
+**CPF:** ${cpf}
+**Data de Nascimento:** ${document.getElementById('dob').value}
+**Telefone:** ${document.getElementById('phone').value}
+**CEP:** ${document.getElementById('cep').value}
+**Endereço:** ${document.getElementById('address').value}
+**Batismo:** ${document.getElementById('baptismDate').value}
+**Função:** ${document.getElementById('position').value}
+**Pai:** ${document.getElementById('fatherName').value}
+**Mãe:** ${document.getElementById('motherName').value}
+**Emissão:** ${document.getElementById('issueDate').value}
+**Validade:** ${document.getElementById('validityDate').value}
+**Registro:** ${regNumber}
+**Dizimista:** ${document.getElementById('dizimista').checked ? 'Sim' : 'Não'}
+**Ebenezer:** ${document.getElementById('ebenezer').checked ? 'Sim' : 'Não'}
+`.trim();
 
-    try {
-        const response = await fetch(url, { method: "POST", headers: { "Accept": "application/json" } });
-        const data = await response.json();
+    // Define labels
+    const labels = [];
+    if (document.getElementById('dizimista').checked) labels.push(dizimistaLabelId);
+    if (document.getElementById('ebenezer').checked) labels.push(ebenezerLabelId);
 
-        // ✅ Gera QR Code com link + CPF + registro
-        const cardUrl = `https://trello.com/c/${data.shortLink}`;
-        const qrData = `${cardUrl}?reg=${regNumber}&cpf=${cpf.replace(/\D/g,'')}`;
+    // Usa FormData pois o Trello precisa disso
+    const formData = new FormData();
+    formData.append('name', `${regNumber} - ${name}`);
+    formData.append('desc', desc);
+    formData.append('idList', listId);
+    if (labels.length) formData.append('idLabels', labels.join(','));
+    formData.append('key', apiKey);
+    formData.append('token', token);
 
-        // Renderiza o QR
-        const qrDiv = document.getElementById('qrcode');
-        qrDiv.innerHTML = "";
-        const qrCode = new QRCode(qrDiv, { text: qrData, width: 200, height: 200, colorDark: "#000", colorLight: "#fff" });
+    // Cria o cartão
+    const response = await fetch('https://api.trello.com/1/cards', {
+        method: 'POST',
+        body: formData
+    });
 
-        // Aguarda renderizar e baixa automaticamente
-        setTimeout(() => {
-            const qrCanvas = qrDiv.querySelector('canvas');
-            const link = document.createElement('a');
-            link.href = qrCanvas.toDataURL("image/png");
-            link.download = `QR_${regNumber}_${cpf.replace(/\D/g,'')}.png`;
-            link.click();
-        }, 500);
+    const card = await response.json();
+    const cardId = card.id;
+    const cardUrl = `https://trello.com/c/${card.shortLink}`;
 
-        alert("Cadastro salvo com sucesso! O QR Code foi baixado.");
+    // Cria e renderiza o QR Code
+    const qrDiv = document.getElementById('qrcode');
+    qrDiv.innerHTML = "";
+    const qrData = `${cardUrl}?reg=${regNumber}&cpf=${cpf.replace(/\D/g,'')}`;
+    new QRCode(qrDiv, { text: qrData, width: 200, height: 200, colorDark: "#000", colorLight: "#fff" });
+
+    setTimeout(async () => {
+        const qrCanvas = qrDiv.querySelector('canvas');
+        const qrBlob = await new Promise(resolve => qrCanvas.toBlob(resolve, 'image/png'));
+
+        // Upload da foto
+        if (imageFile) {
+            const imgData = new FormData();
+            imgData.append('file', imageFile);
+            imgData.append('key', apiKey);
+            imgData.append('token', token);
+            await fetch(`https://api.trello.com/1/cards/${cardId}/attachments`, { method: 'POST', body: imgData });
+        }
+
+        // Upload do QR Code
+        const qrDataForm = new FormData();
+        qrDataForm.append('file', qrBlob, `QR_${regNumber}.png`);
+        qrDataForm.append('key', apiKey);
+        qrDataForm.append('token', token);
+        await fetch(`https://api.trello.com/1/cards/${cardId}/attachments`, { method: 'POST', body: qrDataForm });
+
+        // Baixar QR localmente
+        const link = document.createElement('a');
+        link.href = qrCanvas.toDataURL("image/png");
+        link.download = `QR_${regNumber}_${cpf.replace(/\D/g,'')}.png`;
+        link.click();
+
+        alert("✅ Cadastro completo enviado ao Trello com sucesso!");
         clearForm();
-
-    } catch (error) {
-        console.error(error);
-        alert("Erro ao conectar com o Trello.");
-    }
+    }, 700);
 }
 
 function clearForm() {
