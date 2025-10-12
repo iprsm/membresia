@@ -123,14 +123,15 @@
         <input type="text" id="motherName" required>
 
         <label for="issueDate">Data de Emissão:</label>
-        <input type="date" id="issueDate" required>
+        <input type="date" id="issueDate" required readonly style="background-color:#2a2a2a; cursor:not-allowed;">
 
         <label for="validityDate">Data de Validade:</label>
-        <input type="date" id="validityDate" required>
+        <input type="date" id="validityDate" required readonly style="background-color:#2a2a2a; cursor:not-allowed;">
 
         <!-- Campo Nº de Registro -->
         <label for="regNumber">Nº de Registro:</label>
-        <input type="text" id="regNumber" readonly required>
+        <input type="text" id="regNumber" readonly required style="background-color:#2a2a2a; cursor:not-allowed;">
+
 
         <label for="fileInput">Foto:</label>
         <input type="file" accept="image/*" id="fileInput" onchange="previewImage(event)">
