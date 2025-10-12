@@ -73,16 +73,16 @@
     <input type="date" id="dob" required>
 
     <label for="cpf">CPF:</label>
-    <input type="text" id="cpf" required placeholder="XXX.XXX.XXX-XX">
+    <input type="text" id="cpf" required placeholder="XXX.XXX.XXX-XX" maxlength="14">
 
     <label for="phone">Telefone:</label>
-    <input type="tel" id="phone" required placeholder="(XX) XXXXX-XXXX">
+    <input type="tel" id="phone" required placeholder="(XX) XXXXX-XXXX" maxlength="15">
 
     <label for="cep">CEP:</label>
-    <input type="text" id="cep" placeholder="XXXXX-XXX" maxlength="9" required>
+    <input type="text" id="cep" required placeholder="XXXXX-XXX" maxlength="9" onblur="buscarCEP()">
 
     <label for="address">Endereço:</label>
-    <input type="text" id="address" required>
+    <input type="text" id="address" required readonly>
 
     <label for="baptismDate">Data de Batismo:</label>
     <input type="date" id="baptismDate" required>
@@ -114,7 +114,7 @@
     <input type="text" id="regNumber" readonly required>
 
     <label for="fileInput">Foto:</label>
-    <input type="file" accept="image/*" id="fileInput" onchange="previewImage(event)">
+    <input type="file" accept="image/*" id="fileInput" required onchange="previewImage(event)">
     <img id="preview">
 
     <label><input type="checkbox" id="dizimista"> Dizimista</label>
@@ -135,18 +135,81 @@ const listId = '67891789508c1cc4f9ab7d59';
 const dizimistaLabelId = '67c777cb612091753a2b1c9c';
 const ebenezerLabelId = '67c777cb612091753a2b1c9d';
 
+// Pré-visualização da foto
 function previewImage(event) {
     const file = event.target.files[0];
     const preview = document.getElementById('preview');
-    const reader = new FileReader();
-    reader.onload = function () {
-        preview.src = reader.result;
-        preview.style.display = "block";
-    };
-    reader.readAsDataURL(file);
-    imageFile = file;
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+            preview.src = reader.result;
+            preview.style.display = "block";
+        };
+        reader.readAsDataURL(file);
+        imageFile = file;
+    }
 }
 
+// Máscaras automáticas
+document.getElementById('cpf').addEventListener('input', e => {
+    let v = e.target.value.replace(/\D/g, "");
+    v = v.replace(/(\d{3})(\d)/, "$1.$2");
+    v = v.replace(/(\d{3})(\d)/, "$1.$2");
+    v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+    e.target.value = v;
+});
+
+document.getElementById('phone').addEventListener('input', e => {
+    let v = e.target.value.replace(/\D/g, "");
+    v = v.replace(/^(\d{2})(\d)/g, "($1) $2");
+    v = v.replace(/(\d{5})(\d{4})$/, "$1-$2");
+    e.target.value = v;
+});
+
+document.getElementById('cep').addEventListener('input', e => {
+    let v = e.target.value.replace(/\D/g, "");
+    v = v.replace(/^(\d{5})(\d{3})$/, "$1-$2");
+    e.target.value = v;
+});
+
+// Busca automática do endereço via CEP (ViaCEP)
+async function buscarCEP() {
+    const cep = document.getElementById('cep').value.replace(/\D/g, '');
+    if (cep.length !== 8) {
+        alert("⚠️ CEP inválido. Digite um CEP com 8 dígitos.");
+        return;
+    }
+    try {
+        const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        const data = await response.json();
+        if (data.erro) {
+            alert("❌ CEP não encontrado.");
+            document.getElementById('address').value = '';
+            return;
+        }
+        document.getElementById('address').value = `${data.logradouro}, ${data.bairro}, ${data.localidade} - ${data.uf}`;
+    } catch (error) {
+        alert("❌ Erro ao buscar o CEP. Verifique sua conexão.");
+    }
+}
+
+// Validação de CPF
+function validarCPF(cpf) {
+    cpf = cpf.replace(/\D/g, '');
+    if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
+    let soma = 0, resto;
+    for (let i = 1; i <= 9; i++) soma += parseInt(cpf.substring(i - 1, i)) * (11 - i);
+    resto = (soma * 10) % 11;
+    if ((resto === 10) || (resto === 11)) resto = 0;
+    if (resto !== parseInt(cpf.substring(9, 10))) return false;
+    soma = 0;
+    for (let i = 1; i <= 10; i++) soma += parseInt(cpf.substring(i - 1, i)) * (12 - i);
+    resto = (soma * 10) % 11;
+    if ((resto === 10) || (resto === 11)) resto = 0;
+    return resto === parseInt(cpf.substring(10, 11));
+}
+
+// Datas e número de registro
 function setDefaultDates() {
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('issueDate').value = today;
@@ -168,11 +231,26 @@ async function getTrelloCardCount() {
     document.getElementById('regNumber').value = formatRegNumber(regNumberCounter);
 }
 
+// Envio ao Trello
 async function sendToTrello() {
-    const name = document.getElementById('name').value;
+    const form = document.getElementById('idForm');
+    if (!form.checkValidity()) {
+        alert("⚠️ Preencha todos os campos obrigatórios antes de salvar.");
+        return;
+    }
+    if (!imageFile) {
+        alert("⚠️ A foto é obrigatória!");
+        return;
+    }
+
     const cpf = document.getElementById('cpf').value;
+    if (!validarCPF(cpf)) {
+        alert("❌ CPF inválido. Verifique e tente novamente.");
+        return;
+    }
+
+    const name = document.getElementById('name').value;
     const regNumber = document.getElementById('regNumber').value;
-    if (!name || !cpf) return alert("Preencha os campos obrigatórios!");
 
     const desc = `
 **Nome:** ${name}
@@ -192,12 +270,10 @@ async function sendToTrello() {
 **Ebenezer:** ${document.getElementById('ebenezer').checked ? 'Sim' : 'Não'}
 `.trim();
 
-    // Define labels
     const labels = [];
     if (document.getElementById('dizimista').checked) labels.push(dizimistaLabelId);
     if (document.getElementById('ebenezer').checked) labels.push(ebenezerLabelId);
 
-    // Usa FormData pois o Trello precisa disso
     const formData = new FormData();
     formData.append('name', `${regNumber} - ${name}`);
     formData.append('desc', desc);
@@ -206,34 +282,25 @@ async function sendToTrello() {
     formData.append('key', apiKey);
     formData.append('token', token);
 
-    // Cria o cartão
-    const response = await fetch('https://api.trello.com/1/cards', {
-        method: 'POST',
-        body: formData
-    });
-
+    const response = await fetch('https://api.trello.com/1/cards', { method: 'POST', body: formData });
     const card = await response.json();
     const cardId = card.id;
     const cardUrl = `https://trello.com/c/${card.shortLink}`;
 
-    // Cria e renderiza o QR Code
     const qrDiv = document.getElementById('qrcode');
     qrDiv.innerHTML = "";
-    const qrData = `${cardUrl}?reg=${regNumber}&cpf=${cpf.replace(/\D/g,'')}`;
-    new QRCode(qrDiv, { text: qrData, width: 200, height: 200, colorDark: "#000", colorLight: "#fff" });
+    new QRCode(qrDiv, { text: `${cardUrl}?reg=${regNumber}&cpf=${cpf.replace(/\D/g,'')}`, width: 200, height: 200 });
 
     setTimeout(async () => {
         const qrCanvas = qrDiv.querySelector('canvas');
         const qrBlob = await new Promise(resolve => qrCanvas.toBlob(resolve, 'image/png'));
 
         // Upload da foto
-        if (imageFile) {
-            const imgData = new FormData();
-            imgData.append('file', imageFile);
-            imgData.append('key', apiKey);
-            imgData.append('token', token);
-            await fetch(`https://api.trello.com/1/cards/${cardId}/attachments`, { method: 'POST', body: imgData });
-        }
+        const imgData = new FormData();
+        imgData.append('file', imageFile);
+        imgData.append('key', apiKey);
+        imgData.append('token', token);
+        await fetch(`https://api.trello.com/1/cards/${cardId}/attachments`, { method: 'POST', body: imgData });
 
         // Upload do QR Code
         const qrDataForm = new FormData();
@@ -242,15 +309,9 @@ async function sendToTrello() {
         qrDataForm.append('token', token);
         await fetch(`https://api.trello.com/1/cards/${cardId}/attachments`, { method: 'POST', body: qrDataForm });
 
-        // Baixar QR localmente
-        const link = document.createElement('a');
-        link.href = qrCanvas.toDataURL("image/png");
-        link.download = `QR_${regNumber}_${cpf.replace(/\D/g,'')}.png`;
-        link.click();
-
         alert("✅ Cadastro completo enviado ao Trello com sucesso!");
         clearForm();
-    }, 700);
+    }, 800);
 }
 
 function clearForm() {
