@@ -74,6 +74,12 @@
             margin-top: 10px;
             display: none;
         }
+
+        /* Campos bloqueados */
+        input[readonly] {
+            background-color: #2a2a2a;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -115,7 +121,6 @@
             <option value="Membro(a)">Membro(a)</option>
         </select>
 
-        <!-- Novos Campos -->
         <label for="fatherName">Nome do Pai:</label>
         <input type="text" id="fatherName" required>
 
@@ -123,21 +128,18 @@
         <input type="text" id="motherName" required>
 
         <label for="issueDate">Data de Emissão:</label>
-        <input type="date" id="issueDate" required readonly style="background-color:#2a2a2a; cursor:not-allowed;">
+        <input type="date" id="issueDate" required readonly>
 
         <label for="validityDate">Data de Validade:</label>
-        <input type="date" id="validityDate" required readonly style="background-color:#2a2a2a; cursor:not-allowed;">
+        <input type="date" id="validityDate" required readonly>
 
-        <!-- Campo Nº de Registro -->
         <label for="regNumber">Nº de Registro:</label>
-        <input type="text" id="regNumber" readonly required style="background-color:#2a2a2a; cursor:not-allowed;">
-
+        <input type="text" id="regNumber" readonly required>
 
         <label for="fileInput">Foto:</label>
         <input type="file" accept="image/*" id="fileInput" onchange="previewImage(event)">
         <img id="preview">
 
-        <!-- Novos Campos de Caixa de Seleção -->
         <label for="dizimista">Dizimista:</label>
         <input type="checkbox" id="dizimista">
 
@@ -149,67 +151,56 @@
 
     <script>
         let imageFile = null;
-        let regNumberCounter = 1; // Inicializa o contador de registros (geralmente isso seria armazenado em algum lugar persistente)
+        let regNumberCounter = 1;
 
-        // IDs das etiquetas (preencha com os valores encontrados no Trello)
-        const dizimistaLabelId = '67c777cb612091753a2b1c9c';  // Substitua pelo ID correto
-        const ebenezerLabelId = '67c777cb612091753a2b1c9d';   // Substitua pelo ID correto
+        const dizimistaLabelId = '67c777cb612091753a2b1c9c';
+        const ebenezerLabelId = '67c777cb612091753a2b1c9d';
 
-        // Função para mostrar a imagem capturada ou carregada
         function previewImage(event) {
             const file = event.target.files[0];
             const preview = document.getElementById('preview');
             const reader = new FileReader();
             reader.onload = function () {
                 preview.src = reader.result;
-                preview.style.display = "block";  // Exibe a imagem
+                preview.style.display = "block";
             };
             reader.readAsDataURL(file);
-            imageFile = file;  // Salva o arquivo da imagem
+            imageFile = file;
         }
 
-        // Preencher automaticamente a data de emissão com a data atual e a validade com 15 anos após
         function setDefaultDates() {
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('issueDate').value = today;
 
-            // Calcular a data de validade (15 anos após a data de emissão)
             const validityDate = new Date();
             validityDate.setFullYear(validityDate.getFullYear() + 15);
             document.getElementById('validityDate').value = validityDate.toISOString().split('T')[0];
 
-            // Chama a função para obter o número de registros existentes no Trello
             getTrelloCardCount();
         }
 
-        // Função para formatar o número do registro como 6 dígitos com zeros à esquerda
         function formatRegNumber(number) {
             return number.toString().padStart(6, '0');
         }
 
-        // Buscar a quantidade de cartões na lista do Trello e gerar o número de registro
         async function getTrelloCardCount() {
-            const apiKey = '580b929cd3fd23399eb5a3cbeac8e3df';  // Seu API Key do Trello
-            const token = 'ATTA55a2b891b3ff2eee530ea153c385878e1477d3922646369ecbc140a45aea6597E601FAC0';  // Seu Token do Trello
-            const listId = '67891789508c1cc4f9ab7d59';  // ID da lista do Trello que você deseja acessar
+            const apiKey = '580b929cd3fd23399eb5a3cbeac8e3df';
+            const token = 'ATTA55a2b891b3ff2eee530ea153c385878e1477d3922646369ecbc140a45aea6597E601FAC0';
+            const listId = '67891789508c1cc4f9ab7d59';
 
             const url = `https://api.trello.com/1/lists/${listId}/cards?key=${apiKey}&token=${token}`;
-            
             try {
                 const response = await fetch(url);
                 const data = await response.json();
-                const cardCount = data.length;  // Contagem de cartões existentes
-
-                regNumberCounter = cardCount + 1; // O próximo número será 1 a mais que o número de cartões existentes
-                document.getElementById('regNumber').value = formatRegNumber(regNumberCounter);  // Atualiza o campo com o próximo número
+                regNumberCounter = data.length + 1;
+                document.getElementById('regNumber').value = formatRegNumber(regNumberCounter);
             } catch (error) {
                 console.error('Erro ao obter cartões do Trello:', error);
                 alert("Erro ao obter dados do Trello.");
             }
         }
 
-        let cepTimeout; // Variável para debounce da busca do CEP
-
+        let cepTimeout;
         document.getElementById('cep').addEventListener('input', function () {
             clearTimeout(cepTimeout);
             cepTimeout = setTimeout(() => {
@@ -258,6 +249,11 @@
                 return;
             }
 
+            if (!validarCPF(cpf)) {
+                alert("CPF inválido!");
+                return;
+            }
+
             const cardTitle = `${name}`;
             const cardDescription = `
 **Nome:** ${name}
@@ -283,7 +279,7 @@
 
             const apiKey = '580b929cd3fd23399eb5a3cbeac8e3df';
             const token = 'ATTA55a2b891b3ff2eee530ea153c385878e1477d3922646369ecbc140a45aea6597E601FAC0';
-            const listId = '67891789508c1cc4f9ab7d59';  // ID da lista do Trello
+            const listId = '67891789508c1cc4f9ab7d59';
 
             const url = `https://api.trello.com/1/cards?key=${apiKey}&token=${token}&idList=${listId}&name=${encodeURIComponent(cardTitle)}&desc=${encodeURIComponent(cardDescription)}&idLabels=${labelIds.join(',')}`;
 
@@ -306,20 +302,64 @@
                 }
 
                 alert("Cadastro salvo com sucesso!");
-                clearForm();  // Limpa o formulário após salvar
+                clearForm();
             } catch (error) {
                 alert("Erro ao conectar com o Trello. Verifique as credenciais.");
             }
         }
 
         function clearForm() {
-            document.getElementById('idForm').reset();  // Reseta todos os campos
-            document.getElementById('preview').style.display = "none";  // Esconde a imagem
-            imageFile = null;  // Limpa a variável da imagem
-            setDefaultDates();  // Preenche novamente os campos de data e número de registro
+            document.getElementById('idForm').reset();
+            document.getElementById('preview').style.display = "none";
+            imageFile = null;
+            setDefaultDates();
         }
 
-        // Chama setDefaultDates para preencher as datas e o número de registro quando a página for carregada
+        // ✅ Validação automática do CPF
+        document.getElementById('cpf').addEventListener('input', function (e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length <= 11) {
+                value = value
+                    .replace(/(\d{3})(\d)/, "$1.$2")
+                    .replace(/(\d{3})(\d)/, "$1.$2")
+                    .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+                e.target.value = value;
+            }
+
+            if (value.replace(/\D/g, '').length === 11) {
+                const isValid = validarCPF(value);
+                if (!isValid) {
+                    e.target.style.border = "2px solid red";
+                    e.target.setCustomValidity("CPF inválido");
+                } else {
+                    e.target.style.border = "2px solid green";
+                    e.target.setCustomValidity("");
+                }
+            } else {
+                e.target.style.border = "2px solid #555";
+                e.target.setCustomValidity("");
+            }
+        });
+
+        function validarCPF(cpf) {
+            cpf = cpf.replace(/[^\d]+/g, '');
+            if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+
+            let soma = 0;
+            for (let i = 0; i < 9; i++) soma += parseInt(cpf.charAt(i)) * (10 - i);
+            let resto = 11 - (soma % 11);
+            if (resto === 10 || resto === 11) resto = 0;
+            if (resto !== parseInt(cpf.charAt(9))) return false;
+
+            soma = 0;
+            for (let i = 0; i < 10; i++) soma += parseInt(cpf.charAt(i)) * (11 - i);
+            resto = 11 - (soma % 11);
+            if (resto === 10 || resto === 11) resto = 0;
+            if (resto !== parseInt(cpf.charAt(10))) return false;
+
+            return true;
+        }
+
         window.onload = setDefaultDates;
     </script>
 </body>
