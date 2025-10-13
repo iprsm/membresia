@@ -114,7 +114,14 @@
     <input type="text" id="regNumber" readonly required>
 
     <label for="fileInput">Foto:</label>
-    <input type="file" accept="image/*" id="fileInput" required onchange="previewImage(event)">
+    <input 
+    type="file" 
+    accept="image/*" 
+    id="fileInput" 
+    required 
+    capture="environment" 
+    onchange="previewImage(event)"
+>
     <img id="preview">
 
     <label><input type="checkbox" id="dizimista"> Dizimista</label>
@@ -295,6 +302,15 @@ async function sendToTrello() {
         const qrCanvas = qrDiv.querySelector('canvas');
         const qrBlob = await new Promise(resolve => qrCanvas.toBlob(resolve, 'image/png'));
 
+        // 🟢 Faz o download automático do QR Code
+        const qrUrl = qrCanvas.toDataURL("image/png");
+        const link = document.createElement("a");
+        link.href = qrUrl;
+        link.download = `QR_${regNumber}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
         // Upload da foto
         const imgData = new FormData();
         imgData.append('file', imageFile);
@@ -309,7 +325,7 @@ async function sendToTrello() {
         qrDataForm.append('token', token);
         await fetch(`https://api.trello.com/1/cards/${cardId}/attachments`, { method: 'POST', body: qrDataForm });
 
-        alert("✅ Cadastro completo enviado ao Trello com sucesso!");
+        alert("✅ Cadastro completo enviado ao Trello e QR Code baixado automaticamente!");
         clearForm();
     }, 800);
 }
