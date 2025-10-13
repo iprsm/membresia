@@ -52,9 +52,8 @@
     }
     button:hover { background-color: #2980b9; }
     #preview {
-        max-width: 120px;
+        max-width: 100px;
         margin-top: 10px;
-        border-radius: 8px;
         display: none;
     }
     #qrcode { text-align: center; margin-top: 20px; }
@@ -114,17 +113,9 @@
     <label for="regNumber">Nº de Registro:</label>
     <input type="text" id="regNumber" readonly required>
 
-    <!-- FOTO COM OPÇÃO DE GALERIA E CÂMERA -->
     <label for="fileInput">Foto:</label>
-    <input 
-      type="file" 
-      accept="image/*" 
-      id="fileInput" 
-      required 
-      onchange="previewImage(event)" 
-      capture=""
-    >
-    <img id="preview" alt="Pré-visualização da foto">
+    <input type="file" accept="image/*" id="fileInput" required onchange="previewImage(event)">
+    <img id="preview">
 
     <label><input type="checkbox" id="dizimista"> Dizimista</label>
     <label><input type="checkbox" id="ebenezer"> Ebenezer</label>
@@ -144,7 +135,7 @@ const listId = '67891789508c1cc4f9ab7d59';
 const dizimistaLabelId = '67c777cb612091753a2b1c9c';
 const ebenezerLabelId = '67c777cb612091753a2b1c9d';
 
-// 📸 Função da foto (pré-visualização + armazenamento)
+// Pré-visualização da foto
 function previewImage(event) {
     const file = event.target.files[0];
     const preview = document.getElementById('preview');
@@ -156,13 +147,10 @@ function previewImage(event) {
         };
         reader.readAsDataURL(file);
         imageFile = file;
-    } else {
-        preview.style.display = "none";
-        imageFile = null;
     }
 }
 
-// 🧮 Máscaras
+// Máscaras automáticas
 document.getElementById('cpf').addEventListener('input', e => {
     let v = e.target.value.replace(/\D/g, "");
     v = v.replace(/(\d{3})(\d)/, "$1.$2");
@@ -184,67 +172,70 @@ document.getElementById('cep').addEventListener('input', e => {
     e.target.value = v;
 });
 
-// 🏠 Buscar endereço pelo CEP
+// Busca automática do endereço via CEP (ViaCEP)
 async function buscarCEP() {
     const cep = document.getElementById('cep').value.replace(/\D/g, '');
     if (cep.length !== 8) {
-        alert("⚠️ CEP inválido.");
+        alert("⚠️ CEP inválido. Digite um CEP com 8 dígitos.");
         return;
     }
     try {
-        const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-        const data = await res.json();
+        const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        const data = await response.json();
         if (data.erro) {
             alert("❌ CEP não encontrado.");
+            document.getElementById('address').value = '';
             return;
         }
         document.getElementById('address').value = `${data.logradouro}, ${data.bairro}, ${data.localidade} - ${data.uf}`;
-    } catch {
-        alert("❌ Erro ao buscar CEP.");
+    } catch (error) {
+        alert("❌ Erro ao buscar o CEP. Verifique sua conexão.");
     }
 }
 
-// ✅ CPF
+// Validação de CPF
 function validarCPF(cpf) {
     cpf = cpf.replace(/\D/g, '');
     if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
     let soma = 0, resto;
     for (let i = 1; i <= 9; i++) soma += parseInt(cpf.substring(i - 1, i)) * (11 - i);
     resto = (soma * 10) % 11;
-    if (resto >= 10) resto = 0;
+    if ((resto === 10) || (resto === 11)) resto = 0;
     if (resto !== parseInt(cpf.substring(9, 10))) return false;
     soma = 0;
     for (let i = 1; i <= 10; i++) soma += parseInt(cpf.substring(i - 1, i)) * (12 - i);
     resto = (soma * 10) % 11;
-    if (resto >= 10) resto = 0;
+    if ((resto === 10) || (resto === 11)) resto = 0;
     return resto === parseInt(cpf.substring(10, 11));
 }
 
-// 🗓️ Datas e Registro
+// Datas e número de registro
 function setDefaultDates() {
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('issueDate').value = today;
-    const validity = new Date();
-    validity.setFullYear(validity.getFullYear() + 15);
-    document.getElementById('validityDate').value = validity.toISOString().split('T')[0];
+    const validityDate = new Date();
+    validityDate.setFullYear(validityDate.getFullYear() + 15);
+    document.getElementById('validityDate').value = validityDate.toISOString().split('T')[0];
     getTrelloCardCount();
 }
 
-function formatRegNumber(num) { return num.toString().padStart(6, '0'); }
+function formatRegNumber(number) {
+    return number.toString().padStart(6, '0');
+}
 
 async function getTrelloCardCount() {
     const url = `https://api.trello.com/1/lists/${listId}/cards?key=${apiKey}&token=${token}`;
-    const res = await fetch(url);
-    const data = await res.json();
+    const response = await fetch(url);
+    const data = await response.json();
     regNumberCounter = data.length + 1;
     document.getElementById('regNumber').value = formatRegNumber(regNumberCounter);
 }
 
-// 🚀 Envio ao Trello
+// Envio ao Trello
 async function sendToTrello() {
     const form = document.getElementById('idForm');
     if (!form.checkValidity()) {
-        alert("⚠️ Preencha todos os campos!");
+        alert("⚠️ Preencha todos os campos obrigatórios antes de salvar.");
         return;
     }
     if (!imageFile) {
@@ -253,7 +244,10 @@ async function sendToTrello() {
     }
 
     const cpf = document.getElementById('cpf').value;
-    if (!validarCPF(cpf)) return alert("❌ CPF inválido!");
+    if (!validarCPF(cpf)) {
+        alert("❌ CPF inválido. Verifique e tente novamente.");
+        return;
+    }
 
     const name = document.getElementById('name').value;
     const regNumber = document.getElementById('regNumber').value;
@@ -261,54 +255,70 @@ async function sendToTrello() {
     const desc = `
 **Nome:** ${name}
 **CPF:** ${cpf}
+**Data de Nascimento:** ${document.getElementById('dob').value}
 **Telefone:** ${document.getElementById('phone').value}
+**CEP:** ${document.getElementById('cep').value}
+**Endereço:** ${document.getElementById('address').value}
+**Batismo:** ${document.getElementById('baptismDate').value}
 **Função:** ${document.getElementById('position').value}
+**Pai:** ${document.getElementById('fatherName').value}
+**Mãe:** ${document.getElementById('motherName').value}
+**Emissão:** ${document.getElementById('issueDate').value}
+**Validade:** ${document.getElementById('validityDate').value}
 **Registro:** ${regNumber}
+**Dizimista:** ${document.getElementById('dizimista').checked ? 'Sim' : 'Não'}
+**Ebenezer:** ${document.getElementById('ebenezer').checked ? 'Sim' : 'Não'}
 `.trim();
 
     const labels = [];
     if (document.getElementById('dizimista').checked) labels.push(dizimistaLabelId);
     if (document.getElementById('ebenezer').checked) labels.push(ebenezerLabelId);
 
-    const fd = new FormData();
-    fd.append('name', `${regNumber} - ${name}`);
-    fd.append('desc', desc);
-    fd.append('idList', listId);
-    if (labels.length) fd.append('idLabels', labels.join(','));
-    fd.append('key', apiKey);
-    fd.append('token', token);
+    const formData = new FormData();
+    formData.append('name', `${regNumber} - ${name}`);
+    formData.append('desc', desc);
+    formData.append('idList', listId);
+    if (labels.length) formData.append('idLabels', labels.join(','));
+    formData.append('key', apiKey);
+    formData.append('token', token);
 
-    const res = await fetch('https://api.trello.com/1/cards', { method: 'POST', body: fd });
-    const card = await res.json();
+    const response = await fetch('https://api.trello.com/1/cards', { method: 'POST', body: formData });
+    const card = await response.json();
+    const cardId = card.id;
     const cardUrl = `https://trello.com/c/${card.shortLink}`;
 
-    // QR Code + download
     const qrDiv = document.getElementById('qrcode');
     qrDiv.innerHTML = "";
     new QRCode(qrDiv, { text: `${cardUrl}?reg=${regNumber}&cpf=${cpf.replace(/\D/g,'')}`, width: 200, height: 200 });
 
     setTimeout(async () => {
         const qrCanvas = qrDiv.querySelector('canvas');
-        const qrBlob = await new Promise(r => qrCanvas.toBlob(r, 'image/png'));
-        const qrUrl = qrCanvas.toDataURL("image/png");
-        const a = document.createElement("a");
-        a.href = qrUrl;
-        a.download = `QR_${regNumber}.png`;
-        a.click();
+        const qrBlob = await new Promise(resolve => qrCanvas.toBlob(resolve, 'image/png'));
 
+        // 🟢 Faz o download automático do QR Code
+        const qrUrl = qrCanvas.toDataURL("image/png");
+        const link = document.createElement("a");
+        link.href = qrUrl;
+        link.download = `QR_${regNumber}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // Upload da foto
         const imgData = new FormData();
         imgData.append('file', imageFile);
         imgData.append('key', apiKey);
         imgData.append('token', token);
-        await fetch(`https://api.trello.com/1/cards/${card.id}/attachments`, { method: 'POST', body: imgData });
+        await fetch(`https://api.trello.com/1/cards/${cardId}/attachments`, { method: 'POST', body: imgData });
 
-        const qrData = new FormData();
-        qrData.append('file', qrBlob, `QR_${regNumber}.png`);
-        qrData.append('key', apiKey);
-        qrData.append('token', token);
-        await fetch(`https://api.trello.com/1/cards/${card.id}/attachments`, { method: 'POST', body: qrData });
+        // Upload do QR Code
+        const qrDataForm = new FormData();
+        qrDataForm.append('file', qrBlob, `QR_${regNumber}.png`);
+        qrDataForm.append('key', apiKey);
+        qrDataForm.append('token', token);
+        await fetch(`https://api.trello.com/1/cards/${cardId}/attachments`, { method: 'POST', body: qrDataForm });
 
-        alert("✅ Cadastro enviado e QR Code baixado!");
+        alert("✅ Cadastro completo enviado ao Trello e QR Code baixado automaticamente!");
         clearForm();
     }, 800);
 }
